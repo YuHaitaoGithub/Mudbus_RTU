@@ -1,55 +1,46 @@
 #include"..\include\main.h"
 
+#define toascii(c) (((unsigned char)(c))&0x7f)
+
+
+
+
+
 
 void sendDemo(WzSerialPort& wz)
 {
 	vector<uint16_t>dataIn;
 	
 	/*用户输入************************/
-	/*char ss = '\0';
+	char ss[3] = {};
 	int i = 0;
-	string s = "";
+	vector<string>s;
+	uint16_t a;
+	vector<uint16_t>input;
 	while (1)
 	{
-		ss = getchar();
-		if (ss != '\n')
-			s.push_back(ss);
-		else
-			break;
+		cin >> hex >> a;
+		cout << hex << a << endl;
+		char v[10] = {};
+		_itoa(0x00ff&a,v,10);
+		uint16_t x = CRC16((uint8_t*)v, 3);
+		cout << hex<<x<<endl;
+		char n1[10] = {};
+		_itoa(0x00ff & x, n1, 10);
+		cout <<hex<< n1 << endl;
+		char n2[10] = {};
+		_itoa(0x00ff & (x>>8), n2, 10);
+		cout << hex<<n2 << endl;
+	/*	cout << hex<<v<<endl;
+		sprintf(ss, "%x", a);
+		(uint8_t)ss;
+		cout << ss << endl;*/
 	}
-	int len = s.size();
-	char *p = (char *)malloc((len + 1)*sizeof(char));
-	int len1 = strlen(p);
-	unsigned char *pp = (unsigned char*)(strcpy(p, s.c_str()));*/
-	uint16_t num;
-	while (cin >> num)
-	{
-		if (confirm == num)
-			break;
-		dataIn.push_back(num);
-	}
-	char *buffer = new char[sizeof(uint16_t) + 1];
-	vector<uint8_t *>buf;
-	uint8_t *buf = new uint8_t[sizeof(uint8_t)];
-	for (int i = 0; i < dataIn.size(); i++)
-	{
-		_itoa(dataIn[i], buffer, 16);
-		buf.push_back((uint8_t)buffer);
-		memset(buffer, 0, sizeof(uint16_t) + 1);
-	}
+	//char *p = (char *)malloc((i + 1)*sizeof(char));
+	//int len1 = strlen(p);
+	//unsigned char *pp = (unsigned char*)(strcpy(p, s.c_str()));
 
-	/*校验*****************************/
-	int length = dataIn.size();
-	uint16_t result = CRC16(buf, length);
-	_itoa(0x00ff & result, buffer, 16);
-	buf[length] = (uint8_t)buffer[length++];
-	memset(buffer, 0, sizeof(uint16_t) + 1);
-	_itoa(0xff00 & result, buffer, 16);
-	buffer[2] = '\0';
-	buf[length] = (uint8_t)buffer[length++];
-	memset(buffer, 0, sizeof(uint16_t) + 1);
-	/*发送*****************************/
-	wz.send(buf, length);
+	//wz.send(pp,len);
 }
 
 
@@ -64,13 +55,14 @@ void main()
 	TimeOuts.WriteTotalTimeoutConstant = 2000; //写时间常量
 	WzSerialPort w;
 	bool open_sign = w.open(ComPort, 9600, 0, 8, 1, 1, TimeOuts);
-	if (!open_sign)
-	{
-		cout << "open serial port failed..." << endl;
-		return;
-	}
+	//if (!open_sign)
+	//{
+	//	cout << "open serial port failed..." << endl;
+	//	return;
+	//}
 
 	sendDemo(w);
 
 	return;
 }
+
