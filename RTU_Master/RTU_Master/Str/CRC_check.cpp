@@ -37,14 +37,14 @@ static uint16_t const CRC16Table[256] = {
 };
 
 /*******************************************************************************/
-uint16_t CRC16(vector<uint16_t>& dataIn, int length)
+uint16_t CRC16(uint8_t *buf, int length)
 {
 	uint16_t result = 0;
 	uint16_t tableNo = 0;
 
 	for (int i = 0; i < length; i++)
 	{
-		tableNo = ((result & 0xff) ^ (dataIn[i] & 0x00ff));
+		tableNo = ((result & 0xff) ^ (buf[i] & 0xff));
 		result = ((result >> 8) & 0xff) ^ CRC16Table[tableNo];
 	}
 	return result;

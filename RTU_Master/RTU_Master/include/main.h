@@ -6,9 +6,7 @@
 #include<iostream>
 #include<string>
 #include<vector>
-#include <WinSock2.h>
 #include <windows.h>
-#include <stdio.h>
 
 
 using namespace std;
@@ -19,4 +17,4 @@ using namespace std;
 
 
 
-uint16_t CRC16(vector<uint16_t>& dataIn, int length);
+uint16_t CRC16(uint8_t *buf, int length);

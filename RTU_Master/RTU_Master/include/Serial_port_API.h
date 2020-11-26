@@ -1,6 +1,11 @@
-#pragma once
-#include"main.h"
+#ifndef _WZSERIALPORT_H
+#define _WZSERIALPORT_H
 
+#include <stdio.h>
+#include <string.h>
+
+#include <WinSock2.h>
+#include <windows.h>
 
 
 class WzSerialPort
@@ -31,3 +36,4 @@ private:
 	int pHandle[16];
 	char synchronizeflag;
 };
+#endif
