@@ -17,4 +17,4 @@ using namespace std;
 
 
 
-uint16_t CRC16(uint8_t *buf, int length);
+uint16_t crc16table(vector<uint8_t> ptr, uint16_t len);

@@ -1,46 +1,67 @@
 #include"..\include\main.h"
 
-#define toascii(c) (((unsigned char)(c))&0x7f)
 
 
-
-
+void Input(vector<uint8_t>& in_num)
+{
+	uint16_t num = 0;
+	
+	cout << "输入从站地址" << endl;
+	cin >>hex>> num;
+	in_num.push_back(0x00ff & num);
+	cout << "输入功能码" << endl;
+	cin >>num;
+	in_num.push_back(0x00ff & num);
+	switch (num)
+	{
+	case 1:{	
+		cout << "输入线圈起始地址" << endl;
+		cin >> num;
+		in_num.push_back((0x00ff & (num >> 8)) & num);
+		in_num.push_back(0x00ff & num);
+		cout << "要读线圈个数" << endl;
+		cin >> num;
+		in_num.push_back((0x00ff & (num >> 8)) & num);
+		in_num.push_back(0x00ff & num);
+		break;
+	}
+	}
+}
 
 
 void sendDemo(WzSerialPort& wz)
 {
-	vector<uint16_t>dataIn;
-	
-	/*用户输入************************/
-	char ss[3] = {};
-	int i = 0;
-	vector<string>s;
-	uint16_t a;
-	vector<uint16_t>input;
-	while (1)
-	{
-		cin >> hex >> a;
-		cout << hex << a << endl;
-		char v[10] = {};
-		_itoa(0x00ff&a,v,10);
-		uint16_t x = CRC16((uint8_t*)v, 3);
-		cout << hex<<x<<endl;
-		char n1[10] = {};
-		_itoa(0x00ff & x, n1, 10);
-		cout <<hex<< n1 << endl;
-		char n2[10] = {};
-		_itoa(0x00ff & (x>>8), n2, 10);
-		cout << hex<<n2 << endl;
-	/*	cout << hex<<v<<endl;
-		sprintf(ss, "%x", a);
-		(uint8_t)ss;
-		cout << ss << endl;*/
-	}
-	//char *p = (char *)malloc((i + 1)*sizeof(char));
-	//int len1 = strlen(p);
-	//unsigned char *pp = (unsigned char*)(strcpy(p, s.c_str()));
+	vector<uint8_t>dataIn;
+	uint16_t CRC_num;
+	/*等待接收*******************/
+	Input(dataIn);
+	uint16_t len = dataIn.size();
 
-	//wz.send(pp,len);
+	/*校验码********************/
+	CRC_num = crc16table(dataIn, len);
+
+	/*数据打包******************/
+	dataIn.push_back(0x00ff & CRC_num);
+	dataIn.push_back((0x00ff & (CRC_num>>8)));
+	len = dataIn.size();
+	uint8_t* pp = new uint8_t[len + 1];
+	if (!dataIn.empty())
+	{
+		memcpy(pp, &dataIn[0], len*sizeof(uint8_t));
+	}
+
+	/*数据发送**********************/
+	wz.send(pp,len);
+	uint16_t aa[10] = {};
+	int c = 200;
+	while (c--);
+	{
+		Sleep(10);
+		if (wz.receive(aa, 10))
+		{
+			cout << hex << aa;
+		}
+	}
 }
 
 
@@ -55,14 +76,13 @@ void main()
 	TimeOuts.WriteTotalTimeoutConstant = 2000; //写时间常量
 	WzSerialPort w;
 	bool open_sign = w.open(ComPort, 9600, 0, 8, 1, 1, TimeOuts);
-	//if (!open_sign)
-	//{
-	//	cout << "open serial port failed..." << endl;
-	//	return;
-	//}
-
+	if (!open_sign)
+	{
+		cout << "open serial port failed..." << endl;
+		return;
+	}
 	sendDemo(w);
-
+	system("pause");
 	return;
 }
 
