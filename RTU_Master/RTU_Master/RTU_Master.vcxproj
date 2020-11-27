@@ -79,10 +79,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Str\CRC_check.cpp" />
+    <ClCompile Include="Str\Data_Transformation.cpp" />
     <ClCompile Include="Str\Main.cpp" />
     <ClCompile Include="Str\Serial_Port_API.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\Data_Transformation.h" />
     <ClInclude Include="include\main.h" />
     <ClInclude Include="include\Serial_port_API.h" />
     <ClInclude Include="include\stdint.h" />
