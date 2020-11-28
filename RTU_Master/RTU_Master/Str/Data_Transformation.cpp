@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "..\include\Data_Transformation.h"
 
 SystemChange::SystemChange()
@@ -10,26 +11,40 @@ SystemChange::~SystemChange()
 
 }
 
-int SystemChange::ChangeNum(char* str, int length)
+uint16_t* SystemChange::ChangeNum(char* str, int length, int* sign)
 {
-	char  revstr[16] = { 0 };  //根据十六进制字符串的长度，这里注意数组不要越界
-	int   num[16] = { 0 };
-	int   count = 1;
-	int   result = 0;
-	strcpy_s(revstr, str);
-	for (int i = length - 1; i >= 0; i--)
+	char*  p = (char *)calloc(length + 1, sizeof(char));  //根据十六进制字符串的长度，这里注意数组不要越界
+	uint16_t   num[16] = { 0 };
+	uint16_t   count = 1;
+	uint16_t*  result = (uint16_t *)calloc(length, sizeof(uint16_t));
+	strcpy(p, str);
+	char *revstr = (char *)calloc(3, sizeof(char));
+	int len = length;
+	length += 2;
+
+	while (length -= 2)
 	{
-		if ((revstr[i] >= '0') && (revstr[i] <= '9'))
-			num[i] = revstr[i] - 48;//字符0的ASCII值为48
-		else if ((revstr[i] >= 'a') && (revstr[i] <= 'f'))
-			num[i] = revstr[i] - 'a' + 10;
-		else if ((revstr[i] >= 'A') && (revstr[i] <= 'F'))
-			num[i] = revstr[i] - 'A' + 10;
-		else
-			num[i] = 0;
-		result = result + num[i] * count;
-		count = count * 16;//十六进制(如果是八进制就在这里乘以8)    
+		strncpy(revstr, p, 2);
+		p += 2;
+		for (int i = 1; i >= 0; i--)
+		{
+			if ((revstr[i] >= '0') && (revstr[i] <= '9'))
+				num[i] = revstr[i] - 48;//字符0的ASCII值为48
+			else if ((revstr[i] >= 'a') && (revstr[i] <= 'f'))
+				num[i] = revstr[i] - 'a' + 10;
+			else if ((revstr[i] >= 'A') && (revstr[i] <= 'F'))
+				num[i] = revstr[i] - 'A' + 10;
+			else
+				num[i] = 0;
+			result[*sign] = result[*sign] + num[i] * count;
+			count = count * 16;//十六进制(如果是八进制就在这里乘以8)    
+		}
+		*sign = *sign + 1;
+		memset(revstr, 0, 2);
 	}
+	p = p - len;
+	free(p);
+	free(revstr);
 	return result;
 }
 
