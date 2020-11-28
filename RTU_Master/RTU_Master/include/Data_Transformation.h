@@ -11,7 +11,7 @@ public:
 	SystemChange();
 	~SystemChange();
 
-	uint16_t* ChangeNum(char* str, int length, int* sign);
+	uint16_t SystemChange::ChangeNum(uint8_t* str);
 
 	void nToHexstr(uint8_t n, unsigned char * hexstr, uint8_t strlen);
 

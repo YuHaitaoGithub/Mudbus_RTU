@@ -16,7 +16,7 @@ bool WzSerialPort::open(const char* portname,
 	char databit,
 	char stopbit,
 	char synchronizeflag,
-	COMMTIMEOUTS TimeOuts)
+	LPCOMMTIMEOUTS LpTimeOuts)
 {
 	this->synchronizeflag = synchronizeflag;
 	HANDLE hCom = NULL;
@@ -98,13 +98,9 @@ bool WzSerialPort::open(const char* portname,
 
 	//超时处理,单位：毫秒
 	//总超时＝时间系数×读或写的字符数＋时间常量
-	GetCommTimeouts(hCom, &TimeOuts);
-	//TimeOuts.ReadIntervalTimeout = 1000; //读间隔超时
-	//TimeOuts.ReadTotalTimeoutMultiplier = 500; //读时间系数
-	//TimeOuts.ReadTotalTimeoutConstant = 5000; //读时间常量
-	//TimeOuts.WriteTotalTimeoutMultiplier = 500; // 写时间系数
-	//TimeOuts.WriteTotalTimeoutConstant = 2000; //写时间常量
-	SetCommTimeouts(hCom, &TimeOuts);
+	//GetCommTimeouts(hCom, LpTimeOuts);
+
+	SetCommTimeouts(hCom, LpTimeOuts);
 
 	PurgeComm(hCom, PURGE_TXCLEAR | PURGE_RXCLEAR);//清空串口缓冲区
 
