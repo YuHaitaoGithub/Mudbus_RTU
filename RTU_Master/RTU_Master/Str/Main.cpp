@@ -5,23 +5,21 @@
 void Input(uint8_t* in_num,int* ret)
 {
 	SystemChange data;
-	uint8_t l[3] = {};
+	uint8_t l[10] = {};
 	uint16_t num = 0;
 	uint16_t num2 = 0;
 	cout << "输入从站地址" << endl;
 	cin >> num;
-	in_num[(*ret)++] = 0xff & num;
-	data.nToHexstr(num, l, 2);
+	data.nToHexstr(num&0xff, l, 2);
 	in_num[(*ret)++] = l[0];
 	in_num[(*ret)++] = l[1];
-	memset(l, 0, 2);
+	memset(l, 0, 10);
 
 	cout << "输入功能码" << endl;
-	cin >> num;
-	data.nToHexstr(num, l, 2);
+	cin >> l;
 	in_num[(*ret)++] = l[0];
 	in_num[(*ret)++] = l[1];
-	memset(l, 0, 2);
+	memset(l, 0, 10);
 
 	switch (num)
 	{
@@ -104,8 +102,7 @@ void Input(uint8_t* in_num,int* ret)
 		{
 			uint16_t i = num + 1;
 			printf("要写入第%d个字节的数值\n", i - num);
-			cin >> hex >> num2;
-			data.nToHexstr(num2 & 0xff, l, 2);
+			cin >> l;
 			in_num[(*ret)++] = l[0];
 			in_num[(*ret)++] = l[1];
 			memset(l, 0, 2);
@@ -144,14 +141,12 @@ void Input(uint8_t* in_num,int* ret)
 		{
 			uint16_t i = num+1;
 			printf("要写入第%d个寄存器的数值的高位\n",i - num);
-			cin >> hex >> num2;
-			data.nToHexstr(num2 & 0xff, l, 2);
+			cin >> l;
 			in_num[(*ret)++] = l[0];
 			in_num[(*ret)++] = l[1];
 			memset(l, 0, 2);
 			printf("要写入第%d个寄存器的数值的低位\n", i - num);
-			cin >> hex >> num2;
-			data.nToHexstr(num2 & 0xff, l, 2);
+			cin >> l;
 			in_num[(*ret)++] = l[0];
 			in_num[(*ret)++] = l[1];
 			memset(l, 0, 2);
@@ -164,9 +159,22 @@ void Input(uint8_t* in_num,int* ret)
 
 void sendDemo(WzSerialPort& wz)
 {
+	SystemChange data;
 	uint8_t datanum[1024] = {};
+	uint8_t d[5] = {};
 	int ret = 0;
 	Input(datanum,&ret);
+	int sign = 0;
+	uint16_t* ret_data = data.ChangeNum((char *)datanum, ret, &sign);
+	uint16_t crc_ret = crc16table(ret_data, sign);
+	data.nToHexstr(0xff & crc_ret, d, 2);
+	datanum[ret++] = d[0];
+	datanum[ret++] = d[1];
+	memset(d, 0, 5);
+	data.nToHexstr(0xff & (crc_ret>>8), d, 2);
+	datanum[ret++] = d[0];
+	datanum[ret++] = d[1];
+	memset(d, 0, 5);
 	wz.send(datanum, ret);
 }
 

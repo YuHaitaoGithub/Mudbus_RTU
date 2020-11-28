@@ -45,7 +45,7 @@ const uint8_t crctablelo[] = {
 	0x40
 };
 
-uint16_t crc16table(uint8_t* ptr, uint16_t len)
+uint16_t crc16table(uint16_t* ptr, uint16_t len)
 {
 	uint8_t crchi = 0xff;
 	uint8_t crclo = 0xff;
