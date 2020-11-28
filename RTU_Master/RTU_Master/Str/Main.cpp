@@ -1,13 +1,18 @@
 #include"..\include\main.h"
 
+uint8_t receiveBuf[1024] = {};
+uint8_t SendBuf[1024] = {};
 
 
+
+/*数据输入*************************************/
 void Input(uint8_t* in_num,int* ret)
 {
 	SystemChange data;
 	uint8_t l[10] = {};
 	uint16_t num = 0;
 	uint16_t num2 = 0;
+
 	cout << "输入从站地址（十进制数）" << endl;
 	cin >> num;
 	in_num[(*ret)++] = num&0xff;
@@ -96,25 +101,27 @@ void Input(uint8_t* in_num,int* ret)
 }
 
 
+
+
+/*数据发送***********************************/
 bool sendDemo(WzSerialPort& wz, int* send_dataLen)
 {
 	SystemChange data;
-	uint8_t datanum[1024] = {};
 	int ret = 0;
-	Input(datanum,&ret);
+	Input(SendBuf, &ret);
 
-	uint16_t crc_ret = crc16table(datanum, ret);
-	datanum[ret++] = crc_ret&0xff;
-	datanum[ret++] = (crc_ret>>8)&0xff;
-	cout << "要发送的消息帧" << datanum << endl;
+	uint16_t crc_ret = crc16table(SendBuf, ret);
+	SendBuf[ret++] = crc_ret & 0xff;
+	SendBuf[ret++] = (crc_ret >> 8) & 0xff;
+	cout << "要发送的消息帧" << endl;
 	for (int i = 0; i < ret; i++)
 	{
 		uint8_t d[5] = {};
-		data.nToHexstr(datanum[i], d, 2);
+		data.nToHexstr(SendBuf[i], d, 2);
 		cout << d <<" ";
 	}
 	cout << endl;
-	if (wz.send(datanum, ret) == ret)
+	if (wz.send(SendBuf, ret) == ret)
 	{
 		cout << "已发送" << endl;
 		*send_dataLen = ret;
@@ -127,22 +134,45 @@ bool sendDemo(WzSerialPort& wz, int* send_dataLen)
 	}
 }
 
-void receiveDemo(WzSerialPort& wz, int* receive_dataLen)
+
+
+
+
+/*数据接收***************************************/
+void ReceiveDemo(WzSerialPort& wz, int send_numLen)
 {
 	SystemChange data;
-	int ret = 30;
-	uint8_t buf[1000] = {};
-	int e = wz.receive(buf, ret);
-	for (int i = 0; i < e; i++)
+	int bufLenth = data.ReceiveLenth(SendBuf);
+	int retLenth = wz.receive(receiveBuf, bufLenth);
+	if (NULL == receiveBuf)
+	{
+		cout << "读取超时" << endl;
+		return;
+	}
+	uint16_t d = crc16table(receiveBuf, bufLenth-2);
+	uint16_t t = ((uint16_t)((receiveBuf[bufLenth - 1] & 0x00ff) << 8) | (uint16_t)(receiveBuf[bufLenth - 2] & 0x00ff));
+	if (d != t)
+	{
+		cout << "数据丢失" << endl;
+		return;
+	}
+	if (!data.ErrorcodeJuage(SendBuf, receiveBuf, bufLenth, retLenth))
+		return;
+	for (int i = 0; i < retLenth; i++)
 	{
 		uint8_t r[10] = {};
-		data.nToHexstr(buf[i],r,2);
+		data.nToHexstr(receiveBuf[i], r, 2);
 		cout << r << " ";
 	}
 }
 
+
+
+
+/*主函数************************************/
 void main()
 {
+	/*超时时间设置*/
 	COMMTIMEOUTS TimeOuts;
 	TimeOuts.ReadIntervalTimeout = 2; //读间隔超时
 	TimeOuts.ReadTotalTimeoutMultiplier = 10; //读时间系数
@@ -161,7 +191,7 @@ void main()
 		return;
 	cout << "读取数据中" << endl;
 	int receive_dataLen = 0;
-	receiveDemo(w, &receive_dataLen);
+	ReceiveDemo(w, send_dataLen);
 	system("pause");
 	return;
 }

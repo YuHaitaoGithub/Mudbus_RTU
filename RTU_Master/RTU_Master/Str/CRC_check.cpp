@@ -47,8 +47,8 @@ const uint8_t crctablelo[] = {
 
 uint16_t crc16table(uint8_t* ptr, uint16_t len)
 {
-	uint8_t crchi = 0xff;
-	uint8_t crclo = 0xff;
+	uint16_t crchi = 0xff;
+	uint16_t crclo = 0xff;
 	uint16_t index;
 	int i = 0;
 	while (len--)
@@ -57,5 +57,8 @@ uint16_t crc16table(uint8_t* ptr, uint16_t len)
 		crclo = crchi ^ crctablehi[index];
 		crchi = crctablelo[index];
 	}
+	ptr -= len;
+	i = crchi << 8;
+	int k = crchi << 8 | crclo;
 	return (crchi << 8 | crclo);
 }

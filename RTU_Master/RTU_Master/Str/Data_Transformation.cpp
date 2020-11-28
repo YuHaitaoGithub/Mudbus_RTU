@@ -46,3 +46,124 @@ void SystemChange::nToHexstr(uint8_t n, uint8_t * hexstr, uint8_t strlen)
 	}
 	hexstr[strlen] = '\0';
 }
+
+
+uint16_t SystemChange::ReceiveLenth(uint8_t* data)
+{
+	uint16_t d = 0x00ff & data[1];
+	switch (d)
+	{
+	case 1:{
+		d = (((data[4] & 0x00ff)<<8)| (data[5] & 0x00ff));
+		d = d % 8 == 0 ? d / 8 : d / 8 + 1;
+		d += 5;
+		break;
+	}
+	case 3:{
+		d = (((data[4] & 0x00ff) << 8) | (data[5] & 0x00ff));
+		d = d * 2 + 5;
+		break;
+	}
+	case 15:{d = 8;break;}
+	case 16:{d = 8;break;}
+	}
+	return d;
+}
+
+
+bool SystemChange::ErrorcodeJuage(uint8_t* Sdata, uint8_t* Rdata, int Buflen, int Rlen)
+{
+	if ((uint16_t)(Sdata[0] & 0x00ff) != (uint16_t)(Rdata[0] & 0x00ff))
+	{
+		cout << "从站号不正确" << endl;
+		return false;
+	}
+	if (Rlen < Buflen)
+	{
+		if (((uint16_t)(Rdata[1] & 0x00ff)) != ((uint16_t)((Sdata[1] & 0x00ff) + 0x80)))
+		{
+			cout << "异常功能码不正确" << endl;
+			return false;
+		}
+		else
+		{
+			switch ((uint16_t)(Rdata[2] & 0x00ff))
+			{
+			case 1:{cout << "非法功能码 异常码01" << endl; return true;; }
+			case 2:{cout << "非法数据地址 异常码02" << endl; return true;; }
+			case 3:{cout << "非法数据值 异常码03" << endl; return true;; }
+			case 4:{cout << "从站设备故障 异常码04" << endl; return true;; }
+			}
+			cout << "异常报文" << endl;
+			return true;
+		}
+	}
+	else if (Rlen > Buflen)
+	{
+		cout << "数据异常" << endl;
+		return false;
+	}
+	else
+	{
+		if (((uint16_t)(Rdata[1] & 0x00ff)) != ((uint16_t)(Sdata[1] & 0x00ff)))
+		{
+			cout << "功能码错误" << endl;
+			return false;
+		}
+		switch ((uint16_t)(Rdata[1] & 0x00ff))
+		{
+
+		case 1:{
+			uint16_t d = (((Sdata[4] & 0x00ff) << 8) | (Sdata[5] & 0x00ff));
+			d = d % 8 == 0 ? d / 8 : d / 8 + 1;
+			if (((uint16_t)(Rdata[2] & 0x00ff)) != d)
+			{
+				cout << "数据错误" << endl;
+				return false;
+			}
+			break;
+		}
+		case 3:{
+			uint16_t d = (((Sdata[4] & 0x00ff) << 8) | (Sdata[5] & 0x00ff));
+			d = d * 2;
+			if (((uint16_t)(Rdata[2] & 0x00ff)) != d)
+			{
+				cout << "数据错误" << endl;
+				return false;
+			}
+			break;
+		}
+		case 15:{
+			if ((uint16_t)((uint16_t)((Sdata[2] & 0x00ff) << 8) | (uint16_t)(Sdata[3] & 0x00ff)) !=
+				(uint16_t)((uint16_t)((Rdata[2] & 0x00ff) << 8) | (uint16_t)(Rdata[3] & 0x00ff)))
+			{
+				cout << "寄存器起始地址错误" << endl;
+				return false;
+			}
+			if ((uint16_t)((uint16_t)((Sdata[4] & 0x00ff) << 8) | (uint16_t)(Sdata[5] & 0x00ff)) !=
+				(uint16_t)((uint16_t)((Rdata[4] & 0x00ff) << 8) | (uint16_t)(Rdata[5] & 0x00ff)))
+			{
+				cout << "寄存器数量错误" << endl;
+				return false;
+			}
+			break;
+		}
+		case 16:{
+			if ((uint16_t)((uint16_t)((Sdata[2] & 0x00ff) << 8) | (uint16_t)(Sdata[3] & 0x00ff)) !=
+				(uint16_t)((uint16_t)((Rdata[2] & 0x00ff) << 8) | (uint16_t)(Rdata[3] & 0x00ff)))
+			{
+				cout << "寄存器起始地址错误" << endl;
+				return false;
+			}
+			if ((uint16_t)((uint16_t)((Sdata[4] & 0x00ff) << 8) | (uint16_t)(Sdata[5] & 0x00ff)) !=
+				(uint16_t)((uint16_t)((Rdata[4] & 0x00ff) << 8) | (uint16_t)(Rdata[5] & 0x00ff)))
+			{
+				cout << "寄存器数量错误" << endl;
+				return false;
+			}
+			break;
+		}
+		}
+	}
+	return true;
+}
