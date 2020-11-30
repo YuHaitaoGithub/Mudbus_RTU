@@ -8,110 +8,165 @@ uint8_t SendBuf[1024] = {};
 void Input(uint8_t* in_num,int* ret)
 {
 	SystemChange data;
-	uint8_t l[10] = {};
-	int num = 0;
-	int num2 = 0;
-
-	cout << "输入从站地址（十进制数）" << endl;
-	cin >> num;
-	in_num[(*ret)++] = num&0xff;
-
-	cout << "输入功能码01、03、0f、10" << endl;
-	cin >> l;
-	num2 = data.ChangeNum(l);
-	in_num[(*ret)++] = 0xff&num2;
-	memset(l, 0, 10);
-
-	switch (num2)
+	while (1)
 	{
-	case 1:{
-		cout << "输入线圈起始地址(十进制整数)" << endl;
-		cin >> num;
-		in_num[(*ret)++] = (num >> 8) & 0xff;
+		uint8_t l[10] = {};
+		int num = 0;
+		int num2 = 0;
+
+		cout << "输入从站地址1-255（十进制数）" << endl;
+		while (1){
+			cin >> num;
+			if (num > 255 || num < 1)
+				cout << "寄存器地址超出范围请重新输入" << endl;
+			else break;
+		}
 		in_num[(*ret)++] = num & 0xff;
 
-		cout << "要读线圈个数（十进制整数）" << endl;
-		cin >> num;
-		in_num[(*ret)++] = (num >> 8) & 0xff;
-		in_num[(*ret)++] = num & 0xff;
-		break;
-	}
-	case 3:{
-		cout << "输入寄存器起始地址（十进制整数）" << endl;
-		cin >> num;
-		in_num[(*ret)++] = (num >> 8) & 0xff;
-		in_num[(*ret)++] = num & 0xff;
+  loop:	cout << "输入功能码01、03、0f、10" << endl;
+		cin >> l;
+		if (strlen((char*)l) > 2){
+			cout << "功能码输入不合法，重新输入" << endl; goto loop;
+		}
+		num2 = data.ChangeNum(l);
+		if (!(num2 == 1||num2 == 3||num2 == 15||num2 == 16)){
+			cout << "功能码输入不合法，重新输入" << endl; goto loop;
+		}
+		in_num[(*ret)++] = 0xff & num2;
+		memset(l, 0, 10);
 
-		cout << "要读寄存器的个数(十进制整数)" << endl;
-		cin >> num;
-		in_num[(*ret)++] = (num >> 8) & 0xff;
-		in_num[(*ret)++] = num & 0xff;
-		break;
-	}
-	case 15:{
-		cout << "输入线圈起始地址(十进制整数)" << endl;
-		cin >> num;
-		int i = num;
-		in_num[(*ret)++] = (num >> 8) & 0xff;
-		in_num[(*ret)++] = num & 0xff;
-
-		cout << "要写入的线圈个数(十进制整数)" << endl;
-		cin >> num;
-		int RstNum = num;
-		in_num[(*ret)++] = (num >> 8) & 0xff;
-		in_num[(*ret)++] = num & 0xff;
-		num = num % 8 != 0 ? num = num / 8 + 1 : num /= 8;
-		in_num[(*ret)++] = num & 0xff;
-		char *filename = "E:\\Modbus agreement\\RTU_Master\\Coil.ini";
-		char *section = "Coil";
-		printf("请修改 %d 到 %d 的数值", i, RstNum + i-1);
-		system("Coil.ini");
-		while (num--)
+		switch (num2)
 		{
-			int number = 0;
-			int j = 0;
-			for (i; j < 8 && RstNum;j++)
-			{
-				RstNum--;
-				char k[5] = {};
-				_itoa_s(i + j, k, 10);
-				number = GetPrivateProfileIntA(section, k, -1, filename);
-				in_num[*ret] = ((0xff & number) << (j)) | in_num[*ret];
+		case 1:{
+			cout << "输入线圈起始地址0-65535(十进制整数)" << endl;
+			while (1){
+				cin >> num;
+				if (num > 65535 || num < 0)
+					cout << "寄存器地址超出范围请重新输入" << endl;
+				else break;
 			}
-			*ret = *ret + 1;
-			if (!RstNum)break;
-			j = 0;
-			i = i + 8;
-		}
-		break;
-	}
-	case 16:{
-		cout << "输入寄存器起始地址(十进制整数)" << endl;
-		cin >> num;
-		int i = num;
-		in_num[(*ret)++] = (num >> 8) & 0xff;
-		in_num[(*ret)++] = num & 0xff;
+			in_num[(*ret)++] = (num >> 8) & 0xff;
+			in_num[(*ret)++] = num & 0xff;
 
-		cout << "要写入寄存器的个数(十进制整数)" << endl;
-		cin >> num;
-		int RstNum = num;
-		in_num[(*ret)++] = (num>>8) & 0xff;
-		in_num[(*ret)++] = num & 0xff;
-		in_num[(*ret)++] = (num * 2) & 0xff;
-		char *filename = "E:\\Modbus agreement\\RTU_Master\\Register.ini";
-		char *section = "register";
-		printf("请修改 %d 到 %d 的数值", i, RstNum + i-1);
-		system("Register.ini");
-		for (i; i < RstNum; i++, *ret = (*ret) + 2)
-		{
-			char k[10] = {};
-			_itoa_s(i, k, 10);
-			num = GetPrivateProfileIntA(section, k, -1, filename);
-			in_num[*ret] = (0xff & (num >> 8));
-			in_num[(*ret) + 1] = 0xff & num;
+			cout << "要读线圈个数1-2000（十进制整数）" << endl;
+			while (1){
+				cin >> num;
+				if (num > 2000 || num < 1)
+					cout << "寄存器个数超出范围请重新输入" << endl;
+				else break;
+			}
+			in_num[(*ret)++] = (num >> 8) & 0xff;
+			in_num[(*ret)++] = num & 0xff;
+			break;
+		}
+		case 3:{
+			cout << "输入寄存器起始地址0-65535（十进制整数）" << endl;
+			while (1){
+				cin >> num;
+				if (num > 65535 || num < 0)
+					cout << "寄存器地址超出范围请重新输入" << endl;
+				else break;
+			}
+			in_num[(*ret)++] = (num >> 8) & 0xff;
+			in_num[(*ret)++] = num & 0xff;
+
+			cout << "要读寄存器的个数1-125(十进制整数)" << endl;
+			while (1){
+				cin >> num;
+				if (num > 125 || num < 1)
+					cout << "寄存器个数超出范围请重新输入" << endl;
+				else break;
+			}
+			in_num[(*ret)++] = (num >> 8) & 0xff;
+			in_num[(*ret)++] = num & 0xff;
+			break;
+		}
+		case 15:{
+			cout << "输入线圈起始地址0-65535(十进制整数)" << endl;
+			while (1){
+				cin >> num;
+				if (num > 65535 || num < 0)
+					cout << "寄存器地址超出范围请重新输入" << endl;
+				else break;
+			}
+			int i = num;
+			in_num[(*ret)++] = (num >> 8) & 0xff;
+			in_num[(*ret)++] = num & 0xff;
+
+			cout << "要写入的线圈个数1-1968(十进制整数)" << endl;
+			while (1){
+				cin >> num;
+				if (num > 1968 || num < 1)
+					cout << "寄存器个数超出范围请重新输入" << endl;
+				else break;
+			}
+			int RstNum = num;
+			in_num[(*ret)++] = (num >> 8) & 0xff;
+			in_num[(*ret)++] = num & 0xff;
+			num = num % 8 != 0 ? num = num / 8 + 1 : num /= 8;
+			in_num[(*ret)++] = num & 0xff;
+			char *filename = "../../Coil.ini";
+			char *section = "Coil";
+			printf("请修改 %d 到 %d 的数值", i, RstNum + i - 1);
+			system("Coil.ini");
+			while (num--)
+			{
+				int number = 0;
+				int j = 0;
+				for (i; j < 8 && RstNum; j++)
+				{
+					RstNum--;
+					char k[5] = {};
+					_itoa_s(i + j, k, 10);
+					number = GetPrivateProfileIntA(section, k, -1, filename);
+					in_num[*ret] = ((0xff & number) << (j)) | in_num[*ret];
+				}
+				*ret = *ret + 1;
+				if (!RstNum)break;
+				j = 0;
+				i = i + 8;
+			}
+			break;
+		}
+		case 16:{
+			cout << "输入寄存器0-65535之间的起始地址(十进制整数)" << endl;
+			while (1){
+				cin >> num;
+				if (num > 65535 || num < 0)
+					cout << "寄存器地址超出范围请重新输入" << endl;
+				else break;
+			}
+			int i = num;
+			in_num[(*ret)++] = (num >> 8) & 0xff;
+			in_num[(*ret)++] = num & 0xff;
+
+			cout << "要写入寄存器1-123之间的的个数(十进制整数)" << endl;
+			while (1){
+				cin >> num;
+				if (num > 123 || num < 1)
+					cout << "寄存器个数超出范围请重新输入" << endl;
+				else break;
+			}
+			int RstNum = num;
+			in_num[(*ret)++] = (num >> 8) & 0xff;
+			in_num[(*ret)++] = num & 0xff;
+			in_num[(*ret)++] = (num * 2) & 0xff;
+			char *filename = "../../Register.ini";
+			char *section = "register";
+			printf("请修改 %d 到 %d 的数值", i, RstNum + i - 1);
+			system("Register.ini");
+			for (i; i < RstNum; i++, *ret = (*ret) + 2)
+			{
+				char k[10] = {};
+				_itoa_s(i, k, 10);
+				num = GetPrivateProfileIntA(section, k, -1, filename);
+				in_num[*ret] = (0xff & (num >> 8));
+				in_num[(*ret) + 1] = 0xff & num;
+			}
+			break;
+		}
 		}
 		break;
-	}
 	}
 }
 
@@ -179,6 +234,7 @@ void ReceiveDemo(WzSerialPort& wz, int send_numLen)
 		data.nToHexstr(receiveBuf[i], r, 2);
 		cout << r << " ";
 	}
+	cout << endl;
 }
 
 
@@ -201,13 +257,20 @@ void main()
 		cout << "open serial port failed..." << endl;
 		return;
 	}
-	int send_dataLen = 0;
-	if(!sendDemo(w, &send_dataLen))
-		return;
-	cout << "读取数据中" << endl;
-	int receive_dataLen = 0;
-	ReceiveDemo(w, send_dataLen);
-	system("pause");
-	return;
+	while (1)
+	{
+		int send_dataLen = 0;
+		if (!sendDemo(w, &send_dataLen))
+			return;
+		cout << "读取数据中" << endl;
+		int receive_dataLen = 0;
+		ReceiveDemo(w, send_dataLen);
+		memset(receiveBuf, 0, 1024);
+		memset(SendBuf, 0, 1024);
+		char t = {};
+		cout << "输入数字 0 退出，输入数字 1 继续" << endl;
+		cin >> t;
+		if (t != '1')break;
+	}
 }
 
