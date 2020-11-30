@@ -32,6 +32,7 @@ uint16_t SystemChange::ChangeNum(uint8_t* str)
 	return result;
 }
 
+
 void SystemChange::nToHexstr(uint8_t n, uint8_t * hexstr, uint8_t strlen)
 {
 	uint8_t hexChar[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };

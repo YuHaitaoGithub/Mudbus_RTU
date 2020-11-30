@@ -4,14 +4,13 @@ uint8_t receiveBuf[1024] = {};
 uint8_t SendBuf[1024] = {};
 
 
-
 /*数据输入*************************************/
 void Input(uint8_t* in_num,int* ret)
 {
 	SystemChange data;
 	uint8_t l[10] = {};
-	uint16_t num = 0;
-	uint16_t num2 = 0;
+	int num = 0;
+	int num2 = 0;
 
 	cout << "输入从站地址（十进制数）" << endl;
 	cin >> num;
@@ -52,48 +51,64 @@ void Input(uint8_t* in_num,int* ret)
 	case 15:{
 		cout << "输入线圈起始地址(十进制整数)" << endl;
 		cin >> num;
+		int i = num;
 		in_num[(*ret)++] = (num >> 8) & 0xff;
 		in_num[(*ret)++] = num & 0xff;
 
 		cout << "要写入的线圈个数(十进制整数)" << endl;
 		cin >> num;
+		int RstNum = num;
 		in_num[(*ret)++] = (num >> 8) & 0xff;
 		in_num[(*ret)++] = num & 0xff;
-
 		num = num % 8 != 0 ? num = num / 8 + 1 : num /= 8;
 		in_num[(*ret)++] = num & 0xff;
+		char *filename = "E:\\Modbus agreement\\RTU_Master\\Coil.ini";
+		char *section = "Coil";
+		printf("请修改 %d 到 %d 的数值", i, RstNum + i-1);
+		system("Coil.ini");
 		while (num--)
 		{
-			uint16_t i = num + 1;
-			printf("要写入第%d个字节的数值(十六进制)\n", i - num);
-			cin >> l;
-			in_num[(*ret)++] = 0xff&data.ChangeNum(l);
-			memset(l, 0, 10);
+			int number = 0;
+			int j = 0;
+			for (i; j < 8 && RstNum;j++)
+			{
+				RstNum--;
+				char k[5] = {};
+				_itoa_s(i + j, k, 10);
+				number = GetPrivateProfileIntA(section, k, -1, filename);
+				in_num[*ret] = ((0xff & number) << (j)) | in_num[*ret];
+			}
+			*ret = *ret + 1;
+			if (!RstNum)break;
+			j = 0;
+			i = i + 8;
 		}
 		break;
 	}
 	case 16:{
 		cout << "输入寄存器起始地址(十进制整数)" << endl;
 		cin >> num;
+		int i = num;
 		in_num[(*ret)++] = (num >> 8) & 0xff;
 		in_num[(*ret)++] = num & 0xff;
 
 		cout << "要写入寄存器的个数(十进制整数)" << endl;
 		cin >> num;
+		int RstNum = num;
 		in_num[(*ret)++] = (num>>8) & 0xff;
 		in_num[(*ret)++] = num & 0xff;
-		if(num>=2)num /= 2;
-		while (num--)
+		in_num[(*ret)++] = (num * 2) & 0xff;
+		char *filename = "E:\\Modbus agreement\\RTU_Master\\Register.ini";
+		char *section = "register";
+		printf("请修改 %d 到 %d 的数值", i, RstNum + i-1);
+		system("Register.ini");
+		for (i; i < RstNum; i++, *ret = (*ret) + 2)
 		{
-			uint16_t i = num+1;
-			printf("要写入第%d个寄存器的数值的高位(十六进制)\n",i - num);
-			cin >> l;
-			in_num[(*ret)++] = data.ChangeNum(l) & 0xff;
-			memset(l, 0, 10);
-			printf("要写入第%d个寄存器的数值的低位(十六进制)\n", i - num);
-			cin >> l;
-			in_num[(*ret)++] = data.ChangeNum(l) & 0xff;
-			memset(l, 0, 10);
+			char k[10] = {};
+			_itoa_s(i, k, 10);
+			num = GetPrivateProfileIntA(section, k, -1, filename);
+			in_num[*ret] = (0xff & (num >> 8));
+			in_num[(*ret) + 1] = 0xff & num;
 		}
 		break;
 	}
@@ -153,7 +168,7 @@ void ReceiveDemo(WzSerialPort& wz, int send_numLen)
 	uint16_t t = ((uint16_t)((receiveBuf[bufLenth - 1] & 0x00ff) << 8) | (uint16_t)(receiveBuf[bufLenth - 2] & 0x00ff));
 	if (d != t)
 	{
-		cout << "数据丢失" << endl;
+		cout << "CRC校验不一致" << endl;
 		return;
 	}
 	if (!data.ErrorcodeJuage(SendBuf, receiveBuf, bufLenth, retLenth))
