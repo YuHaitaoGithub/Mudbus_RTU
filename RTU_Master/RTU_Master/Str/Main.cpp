@@ -285,40 +285,48 @@ void InPortParameter(LPCOMMTIMEOUTS lptimeout, SelportParameters* lpconfigport)
 
 
 /*串口监听线程************************************/
-//void SportListen(void* Lconfigport)
-//{
-//	HANDLE hCom = NULL;
-//	while (1)
-//	{
-//		hCom = CreateFileA((char*)Lconfigport, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-//		if (hCom == (HANDLE)-1)
-//			continue;
-//		else
-//			printf("串口不存在\n");
-//		Sleep(100);
-//	}
-//	CloseHandle(hCom);
-//	_endthread();
-//}
+void SportListen(void* Lconfigport)
+{
+	HANDLE hCom = NULL;
+	int i = 1;
+	while (1)
+	{
+		hCom = CreateFileA((char*)Lconfigport, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+		if (hCom == INVALID_HANDLE_VALUE)
+		{
+			if (GetLastError() == 2&&i)
+			{
+				printf("串口不存在\n");
+				i = 0;
+			}
+		}
+		else
+			i = 1;
+		Sleep(200);
+	}
+	CloseHandle(hCom);
+	_endthread();
+}
 
 
 
 /*主函数************************************/
 void main()
 {
-	COMMTIMEOUTS TimeOuts;
+	loop3:COMMTIMEOUTS TimeOuts;
 	WzSerialPort w;
 	SelportParameters configport;
 	InPortParameter(&TimeOuts, &configport);
+	char c[50] = {};
+	memcpy(c, configport.portname, strlen(configport.portname));
 	bool open_sign = w.open(&configport, 1, &TimeOuts);
 	if (!open_sign)
 	{
 		cout << "open serial port failed..." << endl;
 		return;
 	}
-	/*char c[50] = {};
-	memcpy(c, configport.portname, strlen(configport.portname));
-	_beginthread(SportListen, 0, (void*)c);*/
+	
+	_beginthread(SportListen, 0, (void*)c);
 	while (1)
 	{
 		int send_dataLen = 0;
