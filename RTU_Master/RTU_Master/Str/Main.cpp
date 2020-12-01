@@ -284,6 +284,24 @@ void InPortParameter(LPCOMMTIMEOUTS lptimeout, SelportParameters* lpconfigport)
 }
 
 
+/*串口监听线程************************************/
+//void SportListen(void* Lconfigport)
+//{
+//	HANDLE hCom = NULL;
+//	while (1)
+//	{
+//		hCom = CreateFileA((char*)Lconfigport, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+//		if (hCom == (HANDLE)-1)
+//			continue;
+//		else
+//			printf("串口不存在\n");
+//		Sleep(100);
+//	}
+//	CloseHandle(hCom);
+//	_endthread();
+//}
+
+
 
 /*主函数************************************/
 void main()
@@ -298,6 +316,9 @@ void main()
 		cout << "open serial port failed..." << endl;
 		return;
 	}
+	/*char c[50] = {};
+	memcpy(c, configport.portname, strlen(configport.portname));
+	_beginthread(SportListen, 0, (void*)c);*/
 	while (1)
 	{
 		int send_dataLen = 0;
