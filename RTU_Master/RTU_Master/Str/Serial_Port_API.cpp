@@ -10,31 +10,27 @@ WzSerialPort::~WzSerialPort()
 
 }
 
-bool WzSerialPort::open(const char* portname,
-	int baudrate,
-	char parity,
-	char databit,
-	char stopbit,
-	char synchronizeflag,
-	LPCOMMTIMEOUTS LpTimeOuts)
+bool WzSerialPort::open(struct SelportParameters* sportset,char synchronizeflag,LPCOMMTIMEOUTS LpTimeOuts)
 {
 	this->synchronizeflag = synchronizeflag;
 	HANDLE hCom = NULL;
 	if (this->synchronizeflag)
 	{
 		//同步方式
-		hCom = CreateFileA(portname, //串口名
+		hCom = CreateFileA(sportset->portname, //串口名
 			GENERIC_READ | GENERIC_WRITE, //支持读写
 			0, //独占方式，串口不支持共享
 			NULL,//安全属性指针，默认值为NULL
 			OPEN_EXISTING, //打开现有的串口文件
 			0, //0：同步方式，FILE_FLAG_OVERLAPPED：异步方式
 			NULL);//用于复制文件句柄，默认值为NULL，对串口而言该参数必须置为NULL
+		free(sportset->portname);
+		sportset->portname = NULL;
 	}
 	else
 	{
 		//异步方式
-		hCom = CreateFileA(portname, //串口名
+		hCom = CreateFileA(sportset->portname, //串口名
 			GENERIC_READ | GENERIC_WRITE, //支持读写
 			0, //独占方式，串口不支持共享
 			NULL,//安全属性指针，默认值为NULL
@@ -58,10 +54,10 @@ bool WzSerialPort::open(const char* portname,
 	DCB p;
 	memset(&p, 0, sizeof(p));
 	p.DCBlength = sizeof(p);
-	p.BaudRate = baudrate; // 波特率
-	p.ByteSize = databit; // 数据位
+	p.BaudRate = sportset->baudrate; // 波特率
+	p.ByteSize = sportset->databit; // 数据位
 
-	switch (parity) //校验位
+	switch (sportset->parity) //校验位
 	{
 	case 0:
 		p.Parity = NOPARITY; //无校验
@@ -77,7 +73,7 @@ bool WzSerialPort::open(const char* portname,
 		break;
 	}
 
-	switch (stopbit) //停止位
+	switch (sportset->stopbit) //停止位
 	{
 	case 1:
 		p.StopBits = ONESTOPBIT; //1位停止位
@@ -96,8 +92,7 @@ bool WzSerialPort::open(const char* portname,
 		return false;
 	}
 
-	//超时处理,单位：毫秒
-	//总超时＝时间系数×读或写的字符数＋时间常量
+	
 	//GetCommTimeouts(hCom, LpTimeOuts);
 
 	SetCommTimeouts(hCom, LpTimeOuts);
@@ -225,4 +220,25 @@ int WzSerialPort::receive(void *buf, int maxlen)
 		}
 		return wCount;
 	}
+}
+
+
+void WzSerialPort::AvailableCOM()
+{
+	int iCOM = 255;
+	for (int i = 0; i <= iCOM; i++)
+	{
+		char cTemp[MAX_PATH];
+		char cTempFull[MAX_PATH];
+		HANDLE hCom1; //全局变量，串口句柄 
+		sprintf_s(cTemp, "COM%d", i);
+		sprintf_s(cTempFull, "\\\\.\\COM%d", i);
+		hCom1 = CreateFileA(cTempFull, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+		if (hCom1 == (HANDLE)-1)
+			continue;
+		else
+			printf("%s ", cTemp);
+		CloseHandle(hCom1);
+	}
+	printf("\n");
 }

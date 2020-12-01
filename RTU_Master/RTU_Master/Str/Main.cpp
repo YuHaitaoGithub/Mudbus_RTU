@@ -10,13 +10,17 @@ void Input(uint8_t* in_num,int* ret)
 	SystemChange data;
 	while (1)
 	{
-		uint8_t l[10] = {};
+loop1:	uint8_t l[10] = {};
 		int num = 0;
 		int num2 = 0;
-
+		int a = 100;
 		cout << "输入从站地址1-255（十进制数）" << endl;
 		while (1){
 			cin >> num;
+			if (cin.fail()){ 
+				cin.sync(); cin.clear(); goto loop1;
+			}
+			cin.sync();
 			if (num > 255 || num < 1)
 				cout << "寄存器地址超出范围请重新输入" << endl;
 			else break;
@@ -28,10 +32,12 @@ void Input(uint8_t* in_num,int* ret)
 		if (strlen((char*)l) > 2){
 			cout << "功能码输入不合法，重新输入" << endl; goto loop;
 		}
+		cin.sync();
 		num2 = data.ChangeNum(l);
-		if (!(num2 == 1||num2 == 3||num2 == 15||num2 == 16)){
+		if (!(num2 == 1||num2 == 3||num2 == 15||num2 == 16||num2 == 21)){
 			cout << "功能码输入不合法，重新输入" << endl; goto loop;
 		}
+		if (num2 == 21)num2 = 15;
 		in_num[(*ret)++] = 0xff & num2;
 		memset(l, 0, 10);
 
@@ -41,6 +47,7 @@ void Input(uint8_t* in_num,int* ret)
 			cout << "输入线圈起始地址0-65535(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				cin.sync();
 				if (num > 65535 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
 				else break;
@@ -51,6 +58,7 @@ void Input(uint8_t* in_num,int* ret)
 			cout << "要读线圈个数1-2000（十进制整数）" << endl;
 			while (1){
 				cin >> num;
+				cin.sync();
 				if (num > 2000 || num < 1)
 					cout << "寄存器个数超出范围请重新输入" << endl;
 				else break;
@@ -63,6 +71,7 @@ void Input(uint8_t* in_num,int* ret)
 			cout << "输入寄存器起始地址0-65535（十进制整数）" << endl;
 			while (1){
 				cin >> num;
+				cin.sync();
 				if (num > 65535 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
 				else break;
@@ -73,6 +82,7 @@ void Input(uint8_t* in_num,int* ret)
 			cout << "要读寄存器的个数1-125(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				cin.sync();
 				if (num > 125 || num < 1)
 					cout << "寄存器个数超出范围请重新输入" << endl;
 				else break;
@@ -85,6 +95,7 @@ void Input(uint8_t* in_num,int* ret)
 			cout << "输入线圈起始地址0-65535(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				cin.sync();
 				if (num > 65535 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
 				else break;
@@ -96,6 +107,7 @@ void Input(uint8_t* in_num,int* ret)
 			cout << "要写入的线圈个数1-1968(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				cin.sync();
 				if (num > 1968 || num < 1)
 					cout << "寄存器个数超出范围请重新输入" << endl;
 				else break;
@@ -132,6 +144,7 @@ void Input(uint8_t* in_num,int* ret)
 			cout << "输入寄存器0-65535之间的起始地址(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				cin.sync();
 				if (num > 65535 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
 				else break;
@@ -143,6 +156,7 @@ void Input(uint8_t* in_num,int* ret)
 			cout << "要写入寄存器1-123之间的的个数(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				cin.sync();
 				if (num > 123 || num < 1)
 					cout << "寄存器个数超出范围请重新输入" << endl;
 				else break;
@@ -169,7 +183,6 @@ void Input(uint8_t* in_num,int* ret)
 		break;
 	}
 }
-
 
 
 
@@ -207,14 +220,13 @@ bool sendDemo(WzSerialPort& wz, int* send_dataLen)
 
 
 
-
 /*数据接收***************************************/
 void ReceiveDemo(WzSerialPort& wz, int send_numLen)
 {
 	SystemChange data;
 	int bufLenth = data.ReceiveLenth(SendBuf);
 	int retLenth = wz.receive(receiveBuf, bufLenth);
-	if (NULL == receiveBuf)
+	if (retLenth == 0)
 	{
 		cout << "读取超时" << endl;
 		return;
@@ -238,20 +250,49 @@ void ReceiveDemo(WzSerialPort& wz, int send_numLen)
 }
 
 
+/*串口配置***************************/
+void InPortParameter(LPCOMMTIMEOUTS lptimeout, SelportParameters* lpconfigport)
+{
+	WzSerialPort Rcom;
+	cout << "可用串口" << endl;
+	Rcom.AvailableCOM();
+	cout << "输入可用串口号" << endl;
+	int port = 0;
+	cin >> port;
+	char p[20] = {};
+	sprintf(p, "\\\\.\\COM%d", port);
+	lpconfigport->portname = (char*)calloc(strlen(p)+1,sizeof(char));
+	memcpy(lpconfigport->portname, p, strlen(p));
+	cout << "当前串口默认参数：波特率9600，数据位8，无校验，停止位1,超时时间2秒" << endl;
+	int chaeck = 1;
+	cout << "修改串口参数，不需要请关闭" << endl;
+	system("SportParameter.ini");
+	char *f = "../../SportParameter.ini";
+	char *sec = "ParameterText";
+
+	lpconfigport->baudrate = GetPrivateProfileIntA(sec, "Baudrate", -1, f); 
+	lpconfigport->databit = GetPrivateProfileIntA(sec, "Databit", -1, f);
+	lpconfigport->parity = GetPrivateProfileIntA(sec, "Parity", -1, f); 
+	lpconfigport->stopbit = GetPrivateProfileIntA(sec, "Stopbit", -1, f); 
+
+	lptimeout->ReadTotalTimeoutConstant = GetPrivateProfileIntA(sec, "Timeout", -1, f); 	
+	lptimeout->ReadIntervalTimeout = 2; //读间隔超时
+	lptimeout->ReadTotalTimeoutMultiplier = 0; //读时间系数
+	lptimeout->WriteTotalTimeoutMultiplier = 500; // 写时间系数
+	lptimeout->WriteTotalTimeoutConstant = 2000; //写时间常量
+	return;
+}
+
 
 
 /*主函数************************************/
 void main()
 {
-	/*超时时间设置*/
 	COMMTIMEOUTS TimeOuts;
-	TimeOuts.ReadIntervalTimeout = 2; //读间隔超时
-	TimeOuts.ReadTotalTimeoutMultiplier = 10; //读时间系数
-	TimeOuts.ReadTotalTimeoutConstant = 5000; //读时间常量
-	TimeOuts.WriteTotalTimeoutMultiplier = 500; // 写时间系数
-	TimeOuts.WriteTotalTimeoutConstant = 2000; //写时间常量
 	WzSerialPort w;
-	bool open_sign = w.open(ComPort, 9600, 0, 8, 1, 1, &TimeOuts);
+	SelportParameters configport;
+	InPortParameter(&TimeOuts, &configport);
+	bool open_sign = w.open(&configport, 1, &TimeOuts);
 	if (!open_sign)
 	{
 		cout << "open serial port failed..." << endl;
@@ -262,9 +303,11 @@ void main()
 		int send_dataLen = 0;
 		if (!sendDemo(w, &send_dataLen))
 			return;
-		cout << "读取数据中" << endl;
+		cout << "读取数据中........" << endl;
 		int receive_dataLen = 0;
 		ReceiveDemo(w, send_dataLen);
+
+
 		memset(receiveBuf, 0, 1024);
 		memset(SendBuf, 0, 1024);
 		char t = {};
@@ -272,5 +315,6 @@ void main()
 		cin >> t;
 		if (t != '1')break;
 	}
+	w.close();
 }
 
