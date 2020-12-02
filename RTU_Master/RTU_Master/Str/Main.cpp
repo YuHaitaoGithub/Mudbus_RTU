@@ -308,15 +308,15 @@ void main();
 /*串口监听线程************************************/
 void SportListen(void*)
 {
-	WzSerialPort *p = &w;
+	WzSerialPort p = w;
 	
-	char *Lconfigport = (char *)calloc(strlen(p->lpconfigport.portname)+1,sizeof(char));
-	memcpy(Lconfigport, p->lpconfigport.portname, strlen(p->lpconfigport.portname));
+	char *Lconfigport = (char *)calloc(strlen(p.lpconfigport.portname)+1,sizeof(char));
+	memcpy(Lconfigport, p.lpconfigport.portname, strlen(p.lpconfigport.portname));
 	HANDLE hCom = NULL;
 	while (1)
 	{
 		/*监听是否断开*/
-		hCom = CreateFileA((char*)Lconfigport, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
+		hCom = CreateFileA((char*)Lconfigport, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 		if (hCom == INVALID_HANDLE_VALUE )
 		{
 			if (GetLastError() == 2 && tag == 1)
@@ -332,11 +332,13 @@ void SportListen(void*)
 		/*监听是否再次连接上*/
 		if (hCom != INVALID_HANDLE_VALUE && tag == 0)
 		{
+			w = p;
 			tag = 2;
 			cout << "已连接" << endl;
 			cout << "请继续输入"<< endl;
-			SetCommState(hCom, &p->p);
-			SetCommTimeouts(hCom, &p->TimeOuts);
+			/*w.pHandle = hCom;*/
+			SetCommState(hCom, &w.p);
+			SetCommTimeouts(hCom, &w.TimeOuts);
 			/*CloseHandle(hCom);*/
 			free(Lconfigport);
 			Lconfigport = NULL;
