@@ -25,7 +25,7 @@ public:
 	// 打开串口,成功返回true，失败返回false
 	
 	// synchronizeflag(同步、异步,仅适用与windows): 0为异步，1为同步
-	bool open(struct SelportParameters* sportset, char synchronizeflag, LPCOMMTIMEOUTS LpTimeOuts);
+	bool open();
 
 	//关闭串口，参数待定
 	void close();
@@ -39,8 +39,15 @@ public:
 	void AvailableCOM();
 
 	int pHandle[16];
+
+	SelportParameters lpconfigport;
+
+	DCB p;
+
+	COMMTIMEOUTS TimeOuts;
+
+
 private:
-	
-	char synchronizeflag;
+	int synchronizeflag = 1;
 };
 #endif

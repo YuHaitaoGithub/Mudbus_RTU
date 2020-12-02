@@ -188,8 +188,9 @@ loop1:	uint8_t l[10] = {};
 
 
 /*数据发送***********************************/
-bool sendDemo(WzSerialPort& wz, int* send_dataLen)
+bool sendDemo(int* send_dataLen)
 {
+	WzSerialPort wz;
 	SystemChange data;
 	int ret = 0;
 	Input(SendBuf, &ret);
@@ -224,8 +225,9 @@ bool sendDemo(WzSerialPort& wz, int* send_dataLen)
 
 
 /*数据接收***************************************/
-void ReceiveDemo(WzSerialPort& wz, int send_numLen)
+void ReceiveDemo(int send_numLen)
 {
+	WzSerialPort wz;
 	SystemChange data;
 	int bufLenth = data.ReceiveLenth(SendBuf);
 	HANDLE hCom = *(HANDLE*)wz.pHandle;
@@ -257,18 +259,22 @@ void ReceiveDemo(WzSerialPort& wz, int send_numLen)
 
 
 /*串口配置***************************/
-void InPortParameter(LPCOMMTIMEOUTS lptimeout, SelportParameters* lpconfigport)
+void InPortParameter(WzSerialPort *Rcom)
 {
-	WzSerialPort Rcom;
+	if (tag == 2)
+	{
+		Rcom->close();
+		tag = 1;
+	}
 	cout << "可用串口" << endl;
-	Rcom.AvailableCOM();
+	Rcom->AvailableCOM();
 	cout << "输入可用串口号" << endl;
 	int port = 0;
 	cin >> port;
 	char p[20] = {};
 	sprintf(p, "\\\\.\\COM%d", port);
-	lpconfigport->portname = (char*)calloc(strlen(p)+1,sizeof(char));
-	memcpy(lpconfigport->portname, p, strlen(p));
+	Rcom->lpconfigport.portname = (char*)calloc(strlen(p) + 1, sizeof(char));
+	memcpy(Rcom->lpconfigport.portname, p, strlen(p));
 	cout << "当前串口默认参数：波特率9600，数据位8，无校验，停止位1,超时时间2秒" << endl;
 	int chaeck = 1;
 	cout << "修改串口参数，不需要请关闭" << endl;
@@ -276,16 +282,16 @@ void InPortParameter(LPCOMMTIMEOUTS lptimeout, SelportParameters* lpconfigport)
 	char *f = "../../SportParameter.ini";
 	char *sec = "ParameterText";
 
-	lpconfigport->baudrate = GetPrivateProfileIntA(sec, "Baudrate", -1, f); 
-	lpconfigport->databit = GetPrivateProfileIntA(sec, "Databit", -1, f);
-	lpconfigport->parity = GetPrivateProfileIntA(sec, "Parity", -1, f); 
-	lpconfigport->stopbit = GetPrivateProfileIntA(sec, "Stopbit", -1, f); 
+	Rcom->lpconfigport.baudrate = GetPrivateProfileIntA(sec, "Baudrate", -1, f);
+	Rcom->lpconfigport.databit = GetPrivateProfileIntA(sec, "Databit", -1, f);
+	Rcom->lpconfigport.parity = GetPrivateProfileIntA(sec, "Parity", -1, f);
+	Rcom->lpconfigport.stopbit = GetPrivateProfileIntA(sec, "Stopbit", -1, f);
 
-	lptimeout->ReadTotalTimeoutConstant = GetPrivateProfileIntA(sec, "Timeout", -1, f); 	
-	lptimeout->ReadIntervalTimeout = 2; //读间隔超时
-	lptimeout->ReadTotalTimeoutMultiplier = 0; //读时间系数
-	lptimeout->WriteTotalTimeoutMultiplier = 500; // 写时间系数
-	lptimeout->WriteTotalTimeoutConstant = 2000; //写时间常量
+	Rcom->TimeOuts.ReadTotalTimeoutConstant = GetPrivateProfileIntA(sec, "Timeout", -1, f);
+	Rcom->TimeOuts.ReadIntervalTimeout = 2; //读间隔超时
+	Rcom->TimeOuts.ReadTotalTimeoutMultiplier = 0; //读时间系数
+	Rcom->TimeOuts.WriteTotalTimeoutMultiplier = 500; // 写时间系数
+	Rcom->TimeOuts.WriteTotalTimeoutConstant = 2000; //写时间常量
 	return;
 }
 
@@ -293,12 +299,16 @@ void main();
 
 
 /*串口监听线程************************************/
-void SportListen(void* Lconfigport)
+void SportListen(void*pp)
 {
+	WzSerialPort *p = (WzSerialPort*)pp;
+	
+	char *Lconfigport = (char *)calloc(strlen(p->lpconfigport.portname)+1,sizeof(char));
+	memcpy(Lconfigport, p->lpconfigport.portname, strlen(p->lpconfigport.portname));
 	HANDLE hCom = NULL;
 	while (1)
 	{
-		hCom = CreateFileA((char*)Lconfigport, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+		hCom = CreateFileA((char*)Lconfigport, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
 		if (hCom == INVALID_HANDLE_VALUE )
 		{
 			if (GetLastError() == 2 && tag == 1)
@@ -313,10 +323,14 @@ void SportListen(void* Lconfigport)
 		}
 		if (hCom != INVALID_HANDLE_VALUE && tag == 0)
 		{
-			tag = 1;
+			tag = 2;
 			cout << "已连接" << endl;
 			cout << "断开前输入未完成请输入完成当前默认发送失败下一个循环生效"<< endl;
-			CloseHandle(hCom);
+			SetCommState(hCom, &p->p);
+			SetCommTimeouts(hCom, &p->TimeOuts);
+			/*CloseHandle(hCom);*/
+			free(Lconfigport);
+			Lconfigport = NULL;
 			atexit(main);
 			break;
 		}
@@ -330,27 +344,28 @@ void SportListen(void* Lconfigport)
 /*主函数************************************/
 void main()
 {
-	COMMTIMEOUTS TimeOuts;
 	WzSerialPort w;
-	SelportParameters configport;
-	InPortParameter(&TimeOuts, &configport);
-	char c[50] = {};
-	memcpy(c, configport.portname, strlen(configport.portname));
-	bool open_sign = w.open(&configport, 1, &TimeOuts);
+	memset(&w, 0, sizeof(WzSerialPort));
+	InPortParameter(&w);
+	bool open_sign = w.open();
 	if (!open_sign)
 	{
 		cout << "open serial port failed..." << endl;
 		return;
 	}
-	_beginthread(SportListen, 0, (void *)c);
+	_beginthread(SportListen, 0, (void*)&w);
 	while (1)
 	{
 		int send_dataLen = 0;
-		if (!sendDemo(w, &send_dataLen))
-			return;
+		if (!sendDemo(&send_dataLen))
+		{
+			memset(receiveBuf, 0, 1024);
+			memset(SendBuf, 0, 1024);
+			continue;
+		}
 		cout << "读取数据中........" << endl;
 		int receive_dataLen = 0;
-		ReceiveDemo(w, send_dataLen);
+		ReceiveDemo(send_dataLen);
 
 
 		memset(receiveBuf, 0, 1024);
