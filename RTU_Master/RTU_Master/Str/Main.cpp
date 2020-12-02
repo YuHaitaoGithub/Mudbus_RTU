@@ -188,9 +188,8 @@ loop1:	uint8_t l[10] = {};
 
 
 /*数据发送***********************************/
-bool sendDemo(int* send_dataLen)
+bool sendDemo(WzSerialPort wz,int* send_dataLen)
 {
-	WzSerialPort wz;
 	SystemChange data;
 	int ret = 0;
 	Input(SendBuf, &ret);
@@ -225,9 +224,8 @@ bool sendDemo(int* send_dataLen)
 
 
 /*数据接收***************************************/
-void ReceiveDemo(int send_numLen)
+void ReceiveDemo(WzSerialPort wz,int send_numLen)
 {
-	WzSerialPort wz;
 	SystemChange data;
 	int bufLenth = data.ReceiveLenth(SendBuf);
 	HANDLE hCom = *(HANDLE*)wz.pHandle;
@@ -308,7 +306,7 @@ void SportListen(void*pp)
 	HANDLE hCom = NULL;
 	while (1)
 	{
-		hCom = CreateFileA((char*)Lconfigport, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0, NULL);
+		hCom = CreateFileA((char*)Lconfigport, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 		if (hCom == INVALID_HANDLE_VALUE )
 		{
 			if (GetLastError() == 2 && tag == 1)
@@ -357,7 +355,7 @@ void main()
 	while (1)
 	{
 		int send_dataLen = 0;
-		if (!sendDemo(&send_dataLen))
+		if (!sendDemo(w,&send_dataLen))
 		{
 			memset(receiveBuf, 0, 1024);
 			memset(SendBuf, 0, 1024);
@@ -365,7 +363,7 @@ void main()
 		}
 		cout << "读取数据中........" << endl;
 		int receive_dataLen = 0;
-		ReceiveDemo(send_dataLen);
+		ReceiveDemo(w,send_dataLen);
 
 
 		memset(receiveBuf, 0, 1024);
