@@ -38,8 +38,9 @@ public:
 
 	void AvailableCOM();
 
-private:
 	int pHandle[16];
+private:
+	
 	char synchronizeflag;
 };
 #endif

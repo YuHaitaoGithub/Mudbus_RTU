@@ -186,6 +186,7 @@ loop1:	uint8_t l[10] = {};
 
 
 
+
 /*数据发送***********************************/
 bool sendDemo(WzSerialPort& wz, int* send_dataLen)
 {
@@ -204,6 +205,8 @@ bool sendDemo(WzSerialPort& wz, int* send_dataLen)
 		cout << d <<" ";
 	}
 	cout << endl;
+	HANDLE hCom = *(HANDLE*)wz.pHandle;
+	PurgeComm(hCom, PURGE_TXCLEAR);
 	if (wz.send(SendBuf, ret) == ret)
 	{
 		cout << "已发送" << endl;
@@ -225,6 +228,8 @@ void ReceiveDemo(WzSerialPort& wz, int send_numLen)
 {
 	SystemChange data;
 	int bufLenth = data.ReceiveLenth(SendBuf);
+	HANDLE hCom = *(HANDLE*)wz.pHandle;
+	PurgeComm(hCom,PURGE_RXCLEAR);
 	int retLenth = wz.receive(receiveBuf, bufLenth);
 	if (retLenth == 0)
 	{
@@ -248,6 +253,7 @@ void ReceiveDemo(WzSerialPort& wz, int send_numLen)
 	}
 	cout << endl;
 }
+
 
 
 /*串口配置***************************/
@@ -284,6 +290,7 @@ void InPortParameter(LPCOMMTIMEOUTS lptimeout, SelportParameters* lpconfigport)
 }
 
 void main();
+
 
 /*串口监听线程************************************/
 void SportListen(void* Lconfigport)
