@@ -2,7 +2,7 @@
 
 uint8_t receiveBuf[1024] = {};
 uint8_t SendBuf[1024] = {};
-
+int tag = 1;
 
 /*数据输入*************************************/
 void Input(uint8_t* in_num,int* ret)
@@ -283,28 +283,38 @@ void InPortParameter(LPCOMMTIMEOUTS lptimeout, SelportParameters* lpconfigport)
 	return;
 }
 
+void main();
 
 /*串口监听线程************************************/
 void SportListen(void* Lconfigport)
 {
 	HANDLE hCom = NULL;
-	int i = 1;
 	while (1)
 	{
 		hCom = CreateFileA((char*)Lconfigport, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-		if (hCom == INVALID_HANDLE_VALUE)
+		if (hCom == INVALID_HANDLE_VALUE )
 		{
-			if (GetLastError() == 2&&i)
+			if (GetLastError() == 2 && tag == 1)
 			{
-				printf("串口不存在\n");
-				i = 0;
+				/*printf("串口不存在\n等待连接\n");*/
+				char str[20] = {};
+				MessageBoxA(0, "串口不存在", str, 0);
+				cout << "等待连接.........." << endl;
+				tag = 0;
+				CloseHandle(hCom);
 			}
 		}
-		else
-			i = 1;
+		if (hCom != INVALID_HANDLE_VALUE && tag == 0)
+		{
+			tag = 1;
+			cout << "已连接" << endl;
+			cout << "断开前输入未完成请输入完成当前默认发送失败下一个循环生效"<< endl;
+			CloseHandle(hCom);
+			atexit(main);
+			break;
+		}
 		Sleep(200);
 	}
-	CloseHandle(hCom);
 	_endthread();
 }
 
@@ -313,7 +323,7 @@ void SportListen(void* Lconfigport)
 /*主函数************************************/
 void main()
 {
-	loop3:COMMTIMEOUTS TimeOuts;
+	COMMTIMEOUTS TimeOuts;
 	WzSerialPort w;
 	SelportParameters configport;
 	InPortParameter(&TimeOuts, &configport);
@@ -325,8 +335,7 @@ void main()
 		cout << "open serial port failed..." << endl;
 		return;
 	}
-	
-	_beginthread(SportListen, 0, (void*)c);
+	_beginthread(SportListen, 0, (void *)c);
 	while (1)
 	{
 		int send_dataLen = 0;
@@ -345,5 +354,5 @@ void main()
 		if (t != '1')break;
 	}
 	w.close();
+	return;
 }
-
