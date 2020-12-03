@@ -111,8 +111,6 @@ int WzSerialPort::send(const void *buf, int len)
 			dwBytesWrite, //要发送的数据字节数
 			&dwBytesWrite, //DWORD*，用来接收返回成功发送的数据字节数
 			NULL); //NULL为同步发送，OVERLAPPED*为异步发送
-		int l = GetLastError();
-		printf("%d", l);
 		if (!bWriteStat)
 		{
 			return 0;

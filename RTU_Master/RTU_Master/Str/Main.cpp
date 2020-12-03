@@ -16,14 +16,14 @@ loop1:	uint8_t l[10] = {};
 		int num = 0;
 		int num2 = 0;
 		int a = 100;
-		cout << "输入从站地址1-255（十进制数）" << endl;
+		cout << "输入从站地址0-255（十进制数）" << endl;
 		while (1){
 			cin >> num;
 			if (cin.fail()){ 
 				cin.sync(); cin.clear(); goto loop1;
 			}
 			cin.sync();
-			if (num > 255 || num < 1)
+			if (num > 255 || num < 0)
 				cout << "寄存器地址超出范围请重新输入" << endl;
 			else break;
 		}
@@ -190,7 +190,7 @@ loop1:	uint8_t l[10] = {};
 
 
 /*数据发送***********************************/
-bool sendDemo(WzSerialPort wz,int* send_dataLen)
+bool sendDemo(int* send_dataLen)
 {
 	SystemChange data;
 	int ret = 0;
@@ -207,9 +207,9 @@ bool sendDemo(WzSerialPort wz,int* send_dataLen)
 		cout << d <<" ";
 	}
 	cout << endl;
-	HANDLE hCom = *(HANDLE*)wz.pHandle;
+	HANDLE hCom = *(HANDLE*)w.pHandle;
 	PurgeComm(hCom, PURGE_TXCLEAR);
-	if (wz.send(SendBuf, ret) == ret)
+	if (w.send(SendBuf, ret) == ret)
 	{
 		cout << "已发送" << endl;
 		*send_dataLen = ret;
@@ -226,26 +226,28 @@ bool sendDemo(WzSerialPort wz,int* send_dataLen)
 
 
 /*数据接收***************************************/
-void ReceiveDemo(WzSerialPort wz,int send_numLen)
+void ReceiveDemo(int send_numLen)
 {
 	SystemChange data;
 	int bufLenth = data.ReceiveLenth(SendBuf);
 
-	HANDLE hCom = *(HANDLE*)wz.pHandle;
+	HANDLE hCom = *(HANDLE*)w.pHandle;
 	PurgeComm(hCom,PURGE_RXCLEAR);
-	int retLenth = wz.receive(receiveBuf, bufLenth);
+	int retLenth = w.receive(receiveBuf, bufLenth);
 	if (retLenth == 0)
 	{
 		cout << "读取超时" << endl;
 		return;
 	}
 
+
 	/*CRC校验*/
+	
 	uint16_t d = crc16table(receiveBuf, bufLenth-2);
 	uint16_t t = ((uint16_t)((receiveBuf[bufLenth - 1] & 0x00ff) << 8) | (uint16_t)(receiveBuf[bufLenth - 2] & 0x00ff));
 	if (d != t)
 	{
-		cout << "CRC校验不一致" << endl;
+		cout << "CRC校验不一致" << d<<" "<< t<<endl;
 		return;
 	}
 	/*逐位判断***/
@@ -268,11 +270,6 @@ void ReceiveDemo(WzSerialPort wz,int send_numLen)
 /*串口配置***************************/
 void InPortParameter(WzSerialPort *Rcom)
 {
-	if (tag == 2)
-	{
-		Rcom->close();
-		tag = 1;
-	}
 	cout << "可用串口" << endl;
 	Rcom->AvailableCOM();
 	cout << "输入可用串口号" << endl;
@@ -302,7 +299,6 @@ void InPortParameter(WzSerialPort *Rcom)
 	return;
 }
 
-void main();
 
 
 /*串口监听线程************************************/
@@ -325,6 +321,7 @@ void SportListen(void*)
 				MessageBoxA(0, "串口不存在", str, 0);
 				cout << "等待连接.........." << endl;
 				tag = 0;
+				memset(&w, 0, sizeof(w));
 				CloseHandle(hCom);
 			}
 		}
@@ -332,7 +329,9 @@ void SportListen(void*)
 		/*监听是否再次连接上*/
 		if (hCom != INVALID_HANDLE_VALUE && tag == 0)
 		{
+			memset(w.pHandle, 0, 16);
 			w = p;
+			memcpy(w.pHandle, &hCom, sizeof(hCom));
 			tag = 2;
 			cout << "已连接" << endl;
 			cout << "请继续输入"<< endl;
@@ -342,7 +341,6 @@ void SportListen(void*)
 			/*CloseHandle(hCom);*/
 			free(Lconfigport);
 			Lconfigport = NULL;
-			atexit(main);
 			break;
 		}
 		Sleep(200);
@@ -371,8 +369,9 @@ void main()
 
 	while (1)
 	{
+		 _beginthread(SportListen, 0, NULL); 
 		int send_dataLen = 0;
-		if (!sendDemo(w,&send_dataLen))
+		if (!sendDemo(&send_dataLen))
 		{
 			memset(receiveBuf, 0, 1024);
 			memset(SendBuf, 0, 1024);
@@ -380,7 +379,7 @@ void main()
 		}
 		cout << "读取数据中........" << endl;
 		int receive_dataLen = 0;
-		ReceiveDemo(w,send_dataLen);
+		ReceiveDemo(send_dataLen);
 
 
 		memset(receiveBuf, 0, 1024);
