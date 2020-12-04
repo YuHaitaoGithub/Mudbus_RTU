@@ -331,7 +331,7 @@ void SportListen(void*)
 			if (GetLastError() == 2 && tag == 1)
 			{
 				char str[20] = {};
-				MessageBoxA(0, "串口不存在", str, 0);
+				cout << "串口不不存在" << endl;
 				cout << "等待连接.........." << endl;
 				tag = 0;
 				memset(&w, 0, sizeof(w));
