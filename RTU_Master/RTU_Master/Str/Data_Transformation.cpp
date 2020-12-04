@@ -101,7 +101,7 @@ bool SystemChange::ErrorcodeJuage(uint8_t* Sdata, uint8_t* Rdata, int Buflen, in
 	}
 	else if (Rlen > Buflen)
 	{
-		cout << "数据异常" << endl;
+		cout << "数据过长" << endl;
 		return false;
 	}
 	else
@@ -119,7 +119,7 @@ bool SystemChange::ErrorcodeJuage(uint8_t* Sdata, uint8_t* Rdata, int Buflen, in
 			d = d % 8 == 0 ? d / 8 : d / 8 + 1;
 			if (((uint16_t)(Rdata[2] & 0x00ff)) != d)
 			{
-				cout << "数据错误" << endl;
+				cout << "字节数错误" << endl;
 				return false;
 			}
 			break;
@@ -129,7 +129,7 @@ bool SystemChange::ErrorcodeJuage(uint8_t* Sdata, uint8_t* Rdata, int Buflen, in
 			d = d * 2;
 			if (((uint16_t)(Rdata[2] & 0x00ff)) != d)
 			{
-				cout << "数据错误" << endl;
+				cout << "字节数错误" << endl;
 				return false;
 			}
 			break;

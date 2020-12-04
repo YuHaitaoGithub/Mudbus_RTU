@@ -167,7 +167,9 @@ loop1:	uint8_t l[10] = {};
 			in_num[(*ret)++] = (num >> 8) & 0xff;
 			in_num[(*ret)++] = num & 0xff;
 			in_num[(*ret)++] = (num * 2) & 0xff;
-			char *filename = "../../Register.ini";
+			int c = *ret;
+
+loop5:		char *filename = "../../Register.ini";
 			char *section = "register";
 			printf("请修改 %d 到 %d 的数值", i, RstNum + i - 1);
 			system("Register.ini");
@@ -176,6 +178,13 @@ loop1:	uint8_t l[10] = {};
 				char k[10] = {};
 				_itoa_s(i, k, 10);
 				num = GetPrivateProfileIntA(section, k, -1, filename);
+				if (num > 65535)
+				{
+					*ret = c;
+					memset(in_num + c, 0, 1023 - c);
+					cout << "数值过大，请重新赋值" << endl;
+					goto loop5;
+				}
 				in_num[*ret] = (0xff & (num >> 8));
 				in_num[(*ret) + 1] = 0xff & num;
 			}
@@ -239,17 +248,21 @@ void ReceiveDemo(int send_numLen)
 		cout << "读取超时" << endl;
 		return;
 	}
-
-
-	/*CRC校验*/
-	
-	uint16_t d = crc16table(receiveBuf, bufLenth-2);
-	uint16_t t = ((uint16_t)((receiveBuf[bufLenth - 1] & 0x00ff) << 8) | (uint16_t)(receiveBuf[bufLenth - 2] & 0x00ff));
-	if (d != t)
+	if (retLenth < 5)
 	{
-		cout << "CRC校验不一致" << d<<" "<< t<<endl;
+		cout << "长度过短" << endl;
 		return;
 	}
+
+	/*CRC校验*/
+	uint16_t d = crc16table(receiveBuf, retLenth - 2);
+	uint16_t t = ((uint16_t)((receiveBuf[retLenth - 1] & 0x00ff) << 8) | (uint16_t)(receiveBuf[retLenth - 2] & 0x00ff));
+	if (d != t)
+	{
+		cout << "CRC校验不一致" <<endl;
+		return;
+	}
+
 	/*逐位判断***/
 	if (!data.ErrorcodeJuage(SendBuf, receiveBuf, bufLenth, retLenth))
 		return;
