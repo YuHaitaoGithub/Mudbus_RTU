@@ -46,11 +46,11 @@ loop1:	uint8_t l[10] = {};
 		switch (num2)
 		{
 		case 1:{
-			cout << "输入线圈起始地址0-65535(十进制整数)" << endl;
+			cout << "输入线圈起始地址0-1999(十进制整数)" << endl;
 			while (1){
 				cin >> num;
 				cin.sync();
-				if (num > 65535 || num < 0)
+				if (num > 1999 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
 				else break;
 			}
@@ -74,7 +74,7 @@ loop1:	uint8_t l[10] = {};
 			while (1){
 				cin >> num;
 				cin.sync();
-				if (num > 65535 || num < 0)
+				if (num > 124 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
 				else break;
 			}
@@ -98,7 +98,7 @@ loop1:	uint8_t l[10] = {};
 			while (1){
 				cin >> num;
 				cin.sync();
-				if (num > 65535 || num < 0)
+				if (num > 1999 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
 				else break;
 			}
@@ -147,7 +147,7 @@ loop1:	uint8_t l[10] = {};
 			while (1){
 				cin >> num;
 				cin.sync();
-				if (num > 65535 || num < 0)
+				if (num > 124 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
 				else break;
 			}
@@ -314,6 +314,7 @@ void InPortParameter(WzSerialPort *Rcom)
 
 
 
+
 /*串口监听线程************************************/
 void SportListen(void*)
 {
@@ -377,11 +378,12 @@ void main()
 		cout << "open serial port failed..." << endl;
 		return;
 	}
-	/*开启线程监控串口*/
-	_beginthread(SportListen, 0, NULL);
+	
+	/*_beginthread(SportListen, 0, NULL);*/
 
 	while (1)
 	{
+		/*开启线程监控串口*/
 		 _beginthread(SportListen, 0, NULL); 
 		int send_dataLen = 0;
 		if (!sendDemo(&send_dataLen))
@@ -395,7 +397,7 @@ void main()
 		ReceiveDemo(send_dataLen);
 
 
-		memset(receiveBuf, 0, 1024);
+	memset(receiveBuf, 0, 1024);
 		memset(SendBuf, 0, 1024);
 		char t = {};
 		cout << "输入数字 0 退出，输入数字 1 继续" << endl;
