@@ -88,15 +88,20 @@ bool SystemChange::ErrorcodeJuage(uint8_t* Sdata, uint8_t* Rdata, int Buflen, in
 		}
 		else
 		{
-			switch ((uint16_t)(Rdata[2] & 0x00ff))
+			if (Rlen == 5)
 			{
-			case 1:{cout << "非法功能码 异常码01" << endl; return true;; }
-			case 2:{cout << "非法数据地址 异常码02" << endl; return true;; }
-			case 3:{cout << "非法数据值 异常码03" << endl; return true;; }
-			case 4:{cout << "从站设备故障 异常码04" << endl; return true;; }
+				switch ((uint16_t)(Rdata[2] & 0x00ff))
+				{
+				case 1:{cout << "非法功能码 异常码01" << endl; return true;; }
+				case 2:{cout << "非法数据地址 异常码02" << endl; return true;; }
+				case 3:{cout << "非法数据值 异常码03" << endl; return true;; }
+				case 4:{cout << "从站设备故障 异常码04" << endl; return true;; }
+				}
+				cout << "异常报文" << endl;
+				return false;
 			}
 			cout << "异常报文" << endl;
-			return true;
+			return false;
 		}
 	}
 	else if (Rlen > Buflen)
