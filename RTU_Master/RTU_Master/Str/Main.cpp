@@ -70,7 +70,7 @@ loop1:	uint8_t l[10] = {};
 			break;
 		}
 		case 3:{
-			cout << "输入寄存器起始地址0-65535（十进制整数）" << endl;
+			cout << "输入寄存器起始地址0-124（十进制整数）" << endl;
 			while (1){
 				cin >> num;
 				cin.sync();
@@ -94,7 +94,7 @@ loop1:	uint8_t l[10] = {};
 			break;
 		}
 		case 15:{
-			cout << "输入线圈起始地址0-65535(十进制整数)" << endl;
+			cout << "输入线圈起始地址0-1999(十进制整数)" << endl;
 			while (1){
 				cin >> num;
 				cin.sync();
@@ -143,7 +143,7 @@ loop1:	uint8_t l[10] = {};
 			break;
 		}
 		case 16:{
-			cout << "输入寄存器0-65535之间的起始地址(十进制整数)" << endl;
+			cout << "输入寄存器0-124之间的起始地址(十进制整数)" << endl;
 			while (1){
 				cin >> num;
 				cin.sync();
@@ -242,7 +242,12 @@ void ReceiveDemo(int send_numLen)
 
 	HANDLE hCom = *(HANDLE*)w.pHandle;
 	PurgeComm(hCom,PURGE_RXCLEAR);
-	int retLenth = w.receive(receiveBuf, bufLenth);
+	int retLenth = w.receive(receiveBuf, bufLenth+1);
+	if (retLenth > bufLenth)
+	{
+		cout << "长度不合法" << endl;
+		return;
+	}
 	if (retLenth == 0)
 	{
 		cout << "读取超时" << endl;
