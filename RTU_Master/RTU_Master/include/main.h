@@ -9,6 +9,8 @@
 #include <windows.h>
 #include <process.h>
 #include "Data_Transformation.h"
+#include <process.h>
+#include <tchar.h>
 // portname(串口名): 在Windows下是"COM1""COM2"等，在Linux下是"/dev/ttyS1"等
 // baudrate(波特率): 9600、19200、38400、43000、56000、57600、115200 
 // parity(校验位): 0为无校验，1为奇校验，2为偶校验，3为标记校验（仅适用于windows)

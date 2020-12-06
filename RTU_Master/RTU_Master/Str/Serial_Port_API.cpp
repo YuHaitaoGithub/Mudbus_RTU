@@ -87,6 +87,7 @@ bool WzSerialPort::open()
 
 	PurgeComm(hCom, PURGE_TXCLEAR | PURGE_RXCLEAR);//清空串口缓冲区
 
+	memset(pHandle, 0, sizeof(pHandle));
 	memcpy(pHandle, &hCom, sizeof(hCom));// 保存句柄
 
 	return true;
@@ -146,6 +147,7 @@ int WzSerialPort::receive(void *buf, int maxlen)
 void WzSerialPort::AvailableCOM()
 {
 	int iCOM = 255;
+	int k = 0;
 	for (int i = 0; i <= iCOM; i++)
 	{
 		char cTemp[MAX_PATH];
@@ -157,8 +159,13 @@ void WzSerialPort::AvailableCOM()
 		if (hCom1 == (HANDLE)-1)
 			continue;
 		else
+		{
 			printf("%s ", cTemp);
+			++k;
+		}
 		CloseHandle(hCom1);
 	}
+	if (k == 0)printf("无可用串口");
+	else printf("\n输入串口号");
 	printf("\n");
 }

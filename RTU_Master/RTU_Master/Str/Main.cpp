@@ -19,6 +19,7 @@ loop1:	uint8_t l[10] = {};
 		cout << "输入从站地址1-255（十进制数）" << endl;
 		while (1){
 			cin >> num;
+			if (tag == 0)return;
 			if (cin.fail()){ 
 				cin.sync(); cin.clear(); goto loop1;
 			}
@@ -31,6 +32,7 @@ loop1:	uint8_t l[10] = {};
 
   loop:	cout << "输入功能码01、03、0f、10" << endl;
 		cin >> l;
+		if (tag == 0)return;
 		if (strlen((char*)l) > 2){
 			cout << "功能码输入不合法，重新输入" << endl; goto loop;
 		}
@@ -49,6 +51,7 @@ loop1:	uint8_t l[10] = {};
 			cout << "输入线圈起始地址0-65535(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				if (tag == 0)return;
 				cin.sync();
 				if (num > 65535 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
@@ -60,6 +63,7 @@ loop1:	uint8_t l[10] = {};
 			cout << "要读线圈个数1-2000（十进制整数）" << endl;
 			while (1){
 				cin >> num;
+				if (tag == 0)return;
 				cin.sync();
 				if (num > 2000 || num < 1)
 					cout << "寄存器个数超出范围请重新输入" << endl;
@@ -73,6 +77,7 @@ loop1:	uint8_t l[10] = {};
 			cout << "输入寄存器起始地址0-65535（十进制整数）" << endl;
 			while (1){
 				cin >> num;
+				if (tag == 0)return;
 				cin.sync();
 				if (num > 65535 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
@@ -84,6 +89,7 @@ loop1:	uint8_t l[10] = {};
 			cout << "要读寄存器的个数1-125(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				if (tag == 0)return;
 				cin.sync();
 				if (num > 125 || num < 1)
 					cout << "寄存器个数超出范围请重新输入" << endl;
@@ -97,6 +103,7 @@ loop1:	uint8_t l[10] = {};
 			cout << "输入线圈起始地址0-65535(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				if (tag == 0)return;
 				cin.sync();
 				if (num > 65535 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
@@ -109,6 +116,7 @@ loop1:	uint8_t l[10] = {};
 			cout << "要写入的线圈个数1-1968(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				if (tag == 0)return;
 				cin.sync();
 				if (num > 1968 || num < 1)
 					cout << "寄存器个数超出范围请重新输入" << endl;
@@ -146,6 +154,7 @@ loop1:	uint8_t l[10] = {};
 			cout << "输入寄存器0-65535之间的起始地址(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				if (tag == 0)return;
 				cin.sync();
 				if (num > 65535 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
@@ -158,6 +167,7 @@ loop1:	uint8_t l[10] = {};
 			cout << "要写入寄存器1-123之间的的个数(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				if (tag == 0)return;
 				cin.sync();
 				if (num > 123 || num < 1)
 					cout << "寄存器个数超出范围请重新输入" << endl;
@@ -195,7 +205,7 @@ bool sendDemo(WzSerialPort wz,int* send_dataLen)
 	SystemChange data;
 	int ret = 0;
 	Input(SendBuf, &ret);
-
+	if (tag == 0)return false;
 	uint16_t crc_ret = crc16table(SendBuf, ret);
 	SendBuf[ret++] = crc_ret & 0xff;
 	SendBuf[ret++] = (crc_ret >> 8) & 0xff;
@@ -268,16 +278,11 @@ void ReceiveDemo(WzSerialPort wz,int send_numLen)
 /*串口配置***************************/
 void InPortParameter(WzSerialPort *Rcom)
 {
-	if (tag == 2)
-	{
-		Rcom->close();
-		tag = 1;
-	}
 	cout << "可用串口" << endl;
 	Rcom->AvailableCOM();
-	cout << "输入可用串口号" << endl;
 	int port = 0;
 	cin >> port;
+	if (tag == 0)return;
 	char p[20] = {};
 	sprintf(p, "\\\\.\\COM%d", port);
 	Rcom->lpconfigport.portname = (char*)calloc(strlen(p) + 1, sizeof(char));
@@ -302,11 +307,9 @@ void InPortParameter(WzSerialPort *Rcom)
 	return;
 }
 
-void main();
-
 
 /*串口监听线程************************************/
-void SportListen(void*)
+DWORD WINAPI SportListen(LPVOID hThread)
 {
 	WzSerialPort p = w;
 	
@@ -321,33 +324,17 @@ void SportListen(void*)
 		{
 			if (GetLastError() == 2 && tag == 1)
 			{
-				char str[20] = {};
-				MessageBoxA(0, "串口不存在", str, 0);
+				printf("串口不存在");
 				cout << "等待连接.........." << endl;
 				tag = 0;
 				CloseHandle(hCom);
+				break;
 			}
 		}
-
-		/*监听是否再次连接上*/
-		if (hCom != INVALID_HANDLE_VALUE && tag == 0)
-		{
-			w = p;
-			tag = 2;
-			cout << "已连接" << endl;
-			cout << "请继续输入"<< endl;
-			/*w.pHandle = hCom;*/
-			SetCommState(hCom, &w.p);
-			SetCommTimeouts(hCom, &w.TimeOuts);
-			/*CloseHandle(hCom);*/
-			free(Lconfigport);
-			Lconfigport = NULL;
-			atexit(main);
-			break;
-		}
+/*监听是否再次连接上*/
 		Sleep(200);
 	}
-	_endthread();
+	return 0;
 }
 
 
@@ -355,9 +342,7 @@ void SportListen(void*)
 /*主函数************************************/
 void main()
 {
-	if (tag != 2)
-		memset(&w, 0, sizeof(WzSerialPort));
-
+loopp:	memset(&w, 0, sizeof(WzSerialPort));
 	InPortParameter(&w);
 
 	bool open_sign = w.open();
@@ -367,13 +352,18 @@ void main()
 		return;
 	}
 	/*开启线程监控串口*/
-	_beginthread(SportListen, 0, NULL);
-
+	HANDLE hThread1;
+	hThread1 = CreateThread(NULL, 0, SportListen, NULL, 0, NULL);
 	while (1)
 	{
 		int send_dataLen = 0;
 		if (!sendDemo(w,&send_dataLen))
 		{
+			if (tag == 0){
+				tag = 1;
+				CloseHandle(hThread1);
+				goto loopp;
+			}
 			memset(receiveBuf, 0, 1024);
 			memset(SendBuf, 0, 1024);
 			continue;
@@ -385,11 +375,36 @@ void main()
 
 		memset(receiveBuf, 0, 1024);
 		memset(SendBuf, 0, 1024);
-		char t = {};
 		cout << "输入数字 0 退出，输入数字 1 继续" << endl;
-		cin >> t;
-		if (t != '1')break;
+		cin >> tag;
 	}
 	w.close();
 	return;
 }
+
+
+
+//void main()
+//{
+//loop:HANDLE hThread1;
+//    HANDLE hThread2;
+//	hThread2 = CreateThread(NULL, 0, m, NULL, 0, NULL);
+//	hThread1 = CreateThread(NULL, 0, SportListen, NULL, 0, NULL);
+//	while (1){
+//		if (tag == 0){
+//			CloseHandle(hThread2);
+//			CloseHandle(hThread1);
+//			tag = 1;
+//			cout << "1" << endl;
+//			goto loop;
+//		}
+//		if (tag == 3)
+//		{
+//			CloseHandle(hThread2);
+//			CloseHandle(hThread1);
+//			tag = 1;
+//			break;
+//		}
+//	}
+//	return;
+//}

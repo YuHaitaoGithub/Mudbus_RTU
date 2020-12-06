@@ -96,7 +96,7 @@ bool SystemChange::ErrorcodeJuage(uint8_t* Sdata, uint8_t* Rdata, int Buflen, in
 			case 4:{cout << "从站设备故障 异常码04" << endl; return true;; }
 			}
 			cout << "异常报文" << endl;
-			return true;
+			return false;
 		}
 	}
 	else if (Rlen > Buflen)
