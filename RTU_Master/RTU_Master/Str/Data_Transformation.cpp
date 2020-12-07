@@ -104,12 +104,7 @@ bool SystemChange::ErrorcodeJuage(uint8_t* Sdata, uint8_t* Rdata, int Buflen, in
 			return false;
 		}
 	}
-	else if (Rlen > Buflen)
-	{
-		cout << "数据过长" << endl;
-		return false;
-	}
-	else
+	else if (Rlen == Buflen)
 	{
 		if (((uint16_t)(Rdata[1] & 0x00ff)) != ((uint16_t)(Sdata[1] & 0x00ff)))
 		{

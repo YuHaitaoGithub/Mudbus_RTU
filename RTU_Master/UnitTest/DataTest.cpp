@@ -40,6 +40,7 @@ void DataHandle(char *section, unsigned char *sendbuffer, unsigned char *Receveb
 	/*接收数据处理*/
 	char Recevebuf[1024] = {};
 	ReceveBytenum = GetPrivateProfileIntA(section, receveByte, -1, filename);
+	if (!ReceveBytenum)return;
 	GetPrivateProfileStringA(section, receive, NULL, Recevebuf, 1024, filename);
 	p = strtok(Recevebuf," ");
 	memcpy(buf, p, 2);
@@ -85,7 +86,7 @@ void RTUMaster_Test()
 		if (!LenthJuage(ReceveBytenum, TheoryBytenum))
 		{
 			unsigned char outbuf[50] = {};
-			GetPrivateProfileStringA(section, receive, NULL, (char*)outbuf, 50, filename);
+			GetPrivateProfileStringA(section, output, NULL, (char*)outbuf, 50, filename);
 			Assert::AreEqual((unsigned char)0, outbuf[0]);
 			Logger::WriteMessage("长度错误");
 		}
