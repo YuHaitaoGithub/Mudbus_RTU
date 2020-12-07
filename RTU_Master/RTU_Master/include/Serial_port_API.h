@@ -12,7 +12,7 @@ typedef struct SelportParameters{
 #include <stdio.h>
 #include <string.h>
 
-#include <WinSock2.h>
+//#include <WinSock2.h>
 #include <windows.h>
 
 

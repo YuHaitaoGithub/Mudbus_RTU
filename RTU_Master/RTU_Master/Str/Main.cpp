@@ -31,7 +31,7 @@ loop1:	uint8_t l[10] = {};
 
   loop:	cout << "输入功能码01、03、0f、10" << endl;
 		cin >> l;
-		if (strlen((char*)l) > 2){
+		if (strlen((char*)l) != 2){
 			cout << "功能码输入不合法，重新输入" << endl; goto loop;
 		}
 		cin.sync();
@@ -49,6 +49,11 @@ loop1:	uint8_t l[10] = {};
 			cout << "输入线圈起始地址0-1999(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				if (cin.fail()){
+					cin.sync(); cin.clear(); num = 0;
+					cout << "寄存器地址输入错误" << endl;
+					continue;
+				}
 				cin.sync();
 				if (num > 1999 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
@@ -60,6 +65,11 @@ loop1:	uint8_t l[10] = {};
 			cout << "要读线圈个数1-2000（十进制整数）" << endl;
 			while (1){
 				cin >> num;
+				if (cin.fail()){
+					cin.sync(); cin.clear(); num = 0;
+					cout << "寄存器个数输入错误" << endl;
+					continue;
+				}
 				cin.sync();
 				if (num > 2000 || num < 1)
 					cout << "寄存器个数超出范围请重新输入" << endl;
@@ -73,6 +83,11 @@ loop1:	uint8_t l[10] = {};
 			cout << "输入寄存器起始地址0-124（十进制整数）" << endl;
 			while (1){
 				cin >> num;
+				if (cin.fail()){
+					cin.sync(); cin.clear(); num = 0; 
+					cout << "寄存器地址输入错误" << endl;
+					continue;
+				}
 				cin.sync();
 				if (num > 124 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
@@ -84,6 +99,11 @@ loop1:	uint8_t l[10] = {};
 			cout << "要读寄存器的个数1-125(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				if (cin.fail()){
+					cin.sync(); cin.clear(); num = 0;
+					cout << "寄存器个数输入错误" << endl;
+					continue;
+				}
 				cin.sync();
 				if (num > 125 || num < 1)
 					cout << "寄存器个数超出范围请重新输入" << endl;
@@ -97,6 +117,11 @@ loop1:	uint8_t l[10] = {};
 			cout << "输入线圈起始地址0-1999(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				if (cin.fail()){
+					cin.sync(); cin.clear(); num = 0;
+					cout << "寄存器地址输入错误" << endl;
+					continue;
+				}
 				cin.sync();
 				if (num > 1999 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
@@ -109,6 +134,11 @@ loop1:	uint8_t l[10] = {};
 			cout << "要写入的线圈个数1-1968(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				if (cin.fail()){
+					cin.sync(); cin.clear(); num = 0;
+					cout << "寄存器个数输入错误" << endl;
+					continue;
+				}
 				cin.sync();
 				if (num > 1968 || num < 1)
 					cout << "寄存器个数超出范围请重新输入" << endl;
@@ -142,10 +172,16 @@ loop1:	uint8_t l[10] = {};
 			}
 			break;
 		}
+
 		case 16:{
 			cout << "输入寄存器0-124之间的起始地址(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				if (cin.fail()){
+					cin.sync(); cin.clear(); num = 0;
+					cout << "寄存器地址输入错误" << endl;
+					continue;
+				}
 				cin.sync();
 				if (num > 124 || num < 0)
 					cout << "寄存器地址超出范围请重新输入" << endl;
@@ -158,6 +194,11 @@ loop1:	uint8_t l[10] = {};
 			cout << "要写入寄存器1-123之间的的个数(十进制整数)" << endl;
 			while (1){
 				cin >> num;
+				if (cin.fail()){
+					cin.sync(); cin.clear(); num = 0;
+					cout << "寄存器个数输入错误" << endl;
+					continue;
+				}
 				cin.sync();
 				if (num > 123 || num < 1)
 					cout << "寄存器个数超出范围请重新输入" << endl;
@@ -232,6 +273,25 @@ bool sendDemo(int* send_dataLen)
 }
 
 
+bool LenthJuage(int rlen, int len)
+{
+	if (rlen > len)
+	{
+		cout << "长度不合法" << endl;
+		return false;
+	}
+	if (rlen == 0)
+	{
+		cout << "读取超时" << endl;
+		return false;
+	}
+	if (rlen < 5)
+	{
+		cout << "长度过短" << endl;
+		return false;
+	}
+	return true;
+}
 
 
 /*数据接收***************************************/
@@ -243,21 +303,8 @@ void ReceiveDemo(int send_numLen)
 	HANDLE hCom = *(HANDLE*)w.pHandle;
 	PurgeComm(hCom,PURGE_RXCLEAR);
 	int retLenth = w.receive(receiveBuf, bufLenth+1);
-	if (retLenth > bufLenth)
-	{
-		cout << "长度不合法" << endl;
+	if (!LenthJuage(retLenth, bufLenth))
 		return;
-	}
-	if (retLenth == 0)
-	{
-		cout << "读取超时" << endl;
-		return;
-	}
-	if (retLenth < 5)
-	{
-		cout << "长度过短" << endl;
-		return;
-	}
 
 	/*CRC校验*/
 	uint16_t d = crc16table(receiveBuf, retLenth - 2);
@@ -384,8 +431,6 @@ void main()
 		return;
 	}
 	
-	/*_beginthread(SportListen, 0, NULL);*/
-
 	while (1)
 	{
 		/*开启线程监控串口*/
@@ -402,7 +447,7 @@ void main()
 		ReceiveDemo(send_dataLen);
 
 
-	memset(receiveBuf, 0, 1024);
+		memset(receiveBuf, 0, 1024);
 		memset(SendBuf, 0, 1024);
 		char t = {};
 		cout << "输入数字 0 退出，输入数字 1 继续" << endl;
