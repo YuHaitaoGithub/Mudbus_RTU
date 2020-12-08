@@ -15,7 +15,6 @@
 #include"string.h"
 #include "..\\RTU_Master\\include\\Data_Transformation.h"
 #include "..\\RTU_Master\\include\\main.h"
-#include "..\\RTU_Master\\include\\Serial_port_API.h"
 #include "..\\RTU_Master\\include\\stdint.h"
 
 
