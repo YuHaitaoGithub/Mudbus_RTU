@@ -10,7 +10,6 @@
 #include <process.h>
 #include "Data_Transformation.h"
 
-bool LenthJuage(int rlen, int len);
 
 
 

@@ -61,7 +61,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>..\RTU_Master\Debug\CRC_check.obj;..\RTU_Master\Debug\Data_Transformation.obj;..\RTU_Master\Debug\Main.obj;..\RTU_Master\Debug\Serial_Port_API.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\RTU_Master\Debug\Data_Transformation.obj;..\RTU_Master\Debug\CRC_check.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

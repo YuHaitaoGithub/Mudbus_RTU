@@ -79,11 +79,10 @@ void RTUMaster_Test()
 		DataHandle(section, sendbuffer, Recevebuffer);
 
 		SystemChange data;
-		WzSerialPort w;
 		int TheoryBytenum = data.ReceiveLenth(sendbuffer);//理论接收长度
 
 
-		if (!LenthJuage(ReceveBytenum, TheoryBytenum))
+		if (!data.LenthJuage(ReceveBytenum, TheoryBytenum))
 		{
 			unsigned char outbuf[50] = {};
 			GetPrivateProfileStringA(section, output, NULL, (char*)outbuf, 50, filename);

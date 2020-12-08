@@ -6,6 +6,23 @@ int tag = 1;
 
 WzSerialPort w;
 
+void nToHexstr(uint8_t n, uint8_t * hexstr, uint8_t strlen)
+{
+	uint8_t hexChar[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+	uint8_t i;
+	uint8_t dis;
+	unsigned long nTemp = (long)n;
+	for (i = 1; i <= strlen; i++)
+	{
+		dis = nTemp & 0x0f;
+		hexstr[strlen - i] = hexChar[dis];
+		nTemp = nTemp >> 4;
+	}
+	hexstr[strlen] = '\0';
+}
+
+
+
 /*数据输入*************************************/
 void Input(uint8_t* in_num,int* ret)
 {
@@ -253,7 +270,7 @@ bool sendDemo(int* send_dataLen)
 	for (int i = 0; i < ret; i++)
 	{
 		uint8_t d[5] = {};
-		data.nToHexstr(SendBuf[i], d, 2);
+		nToHexstr(SendBuf[i], d, 2);
 		cout << d <<" ";
 	}
 	cout << endl;
@@ -273,25 +290,7 @@ bool sendDemo(int* send_dataLen)
 }
 
 
-bool LenthJuage(int rlen, int len)
-{
-	if (rlen > len)
-	{
-		cout << "长度不合法" << endl;
-		return false;
-	}
-	if (rlen == 0)
-	{
-		cout << "读取超时" << endl;
-		return false;
-	}
-	if (rlen < 5)
-	{
-		cout << "长度过短" << endl;
-		return false;
-	}
-	return true;
-}
+
 
 
 /*数据接收***************************************/
@@ -303,7 +302,7 @@ void ReceiveDemo(int send_numLen)
 	HANDLE hCom = *(HANDLE*)w.pHandle;
 	PurgeComm(hCom,PURGE_RXCLEAR);
 	int retLenth = w.receive(receiveBuf, bufLenth+1);
-	if (!LenthJuage(retLenth, bufLenth))
+	if (!data.LenthJuage(retLenth, bufLenth))
 		return;
 
 	/*CRC校验*/
@@ -324,7 +323,7 @@ void ReceiveDemo(int send_numLen)
 	for (int i = 0; i < retLenth; i++)
 	{
 		uint8_t r[10] = {};
-		data.nToHexstr(receiveBuf[i], r, 2);
+		nToHexstr(receiveBuf[i], r, 2);
 		cout << r << " ";
 	}
 	cout << endl;
