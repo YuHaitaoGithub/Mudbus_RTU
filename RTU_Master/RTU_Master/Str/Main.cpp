@@ -82,7 +82,7 @@ int Input()
 		char *section = "register";
 		printf("请修改 %d 到 %d 的数值", retaddr, RstNum + retaddr - 1);
 		system("Register.ini");
-		for (retaddr; retaddr < RstNum + retaddr; retaddr++, retlen = retlen + 2)
+		for (retaddr; retaddr < RstNum; retaddr++, retlen = retlen + 2)
 		{
 			char k[10] = {};
 			_itoa_s(retaddr, k, 10);
@@ -109,6 +109,7 @@ bool sendDemo(int* send_dataLen)
 	uint16_t crc_ret = crc16table(SendBuf, ret);
 	SendBuf[ret++] = crc_ret & 0xff;
 	SendBuf[ret++] = (crc_ret >> 8) & 0xff;
+
 	cout << "要发送的消息帧" << endl;
 	for (int i = 0; i < ret; i++)
 	{

@@ -172,8 +172,8 @@ void DataInput::In_10_Data(int *lprestaddr, int *lpRestnum)
 {
 	while (1)
 	{
-		cout << "输入寄存器0-124之间的起始地址(十进制整数)" << endl;
-		int retnum = InputJuage(124, 0);
+		cout << "输入寄存器0-122之间的起始地址(十进制整数)" << endl;
+		int retnum = InputJuage(122, 0);
 		if (retnum == -1)
 			continue;
 		else{
