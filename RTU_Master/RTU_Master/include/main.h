@@ -9,17 +9,9 @@
 #include <windows.h>
 #include <process.h>
 #include "Data_Transformation.h"
-
-
-
-
+#include "Data_Input.h"
 
 using namespace std;
 
-//#define ComPort "COM3"
-#define confirm 111
 
-
-
-
-uint16_t crc16table(uint8_t* ptr, uint16_t len);
+uint16_t crc16table(uint8_t* ptr, uint16_t len);//CRCÐ£Ñé

@@ -23,8 +23,6 @@ public:
 	~WzSerialPort();
 
 	// 打开串口,成功返回true，失败返回false
-	
-	// synchronizeflag(同步、异步,仅适用与windows): 0为异步，1为同步
 	bool open();
 
 	//关闭串口，参数待定
@@ -36,11 +34,11 @@ public:
 	//接受数据或读数据，成功返回读取实际数据的长度，失败返回0
 	int receive(void *buf, int maxlen);
 
-	void AvailableCOM();
+	void AvailableCOM();//COM口判断
 
-	int pHandle[16];
+	int pHandle[16];//保存串口号
 
-	SelportParameters lpconfigport;
+	SelportParameters lpconfigport;//串口参数结构体
 
 	DCB p;
 

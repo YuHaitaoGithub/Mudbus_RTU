@@ -22,235 +22,79 @@ void nToHexstr(uint8_t n, uint8_t * hexstr, uint8_t strlen)
 }
 
 
-
 /*数据输入*************************************/
-void Input(uint8_t* in_num,int* ret)
+int Input()
 {
+	char c = '0';
+	while(c != '\n')
+		 c = getchar();
+	int retlen = 0;
+	DataInput injuage;
 	SystemChange data;
-	while (1)
+	injuage.len = &retlen;
+	injuage.buf = SendBuf;
+	/*从站地址*/
+	injuage.In_SlaveAddress();
+
+	int fun_code = injuage.FunctionCode();
+
+	switch (fun_code)
 	{
-loop1:	uint8_t l[10] = {};
-		int num = 0;
-		int num2 = 0;
-		int a = 100;
-		cout << "输入从站地址0-255（十进制数）" << endl;
-		while (1){
-			cin >> num;
-			if (cin.fail()){ 
-				cin.sync(); cin.clear(); goto loop1;
-			}
-			cin.sync();
-			if (num > 255 || num < 0)
-				cout << "寄存器地址超出范围请重新输入" << endl;
-			else break;
-		}
-		in_num[(*ret)++] = num & 0xff;
+	case 1:{injuage.In_01_Data(); break; }
 
-  loop:	cout << "输入功能码01、03、0f、10" << endl;
-		cin >> l;
-		if (strlen((char*)l) != 2){
-			cout << "功能码输入不合法，重新输入" << endl; goto loop;
-		}
-		cin.sync();
-		num2 = data.ChangeNum(l);
-		if (!(num2 == 1||num2 == 3||num2 == 15||num2 == 16||num2 == 21)){
-			cout << "功能码输入不合法，重新输入" << endl; goto loop;
-		}
-		if (num2 == 21)num2 = 15;
-		in_num[(*ret)++] = 0xff & num2;
-		memset(l, 0, 10);
+	case 3:{injuage.In_03_Data(); break; }
 
-		switch (num2)
+	case 15:{
+		int addr = 0; int Coilnum = 0;
+		injuage.In_0f_Data(&addr, &Coilnum);
+		int num = Coilnum % 8 != 0 ? Coilnum / 8 + 1 : Coilnum / 8;
+		SendBuf[retlen++] = num & 0xff;
+		char *filename = "../../Coil.ini";
+		char *section = "Coil";
+		printf("请修改 %d 到 %d 的数值", addr, Coilnum + addr - 1);
+		system("Coil.ini");
+		while (num--)
 		{
-		case 1:{
-			cout << "输入线圈起始地址0-1999(十进制整数)" << endl;
-			while (1){
-				cin >> num;
-				if (cin.fail()){
-					cin.sync(); cin.clear(); num = 0;
-					cout << "寄存器地址输入错误" << endl;
-					continue;
-				}
-				cin.sync();
-				if (num > 1999 || num < 0)
-					cout << "寄存器地址超出范围请重新输入" << endl;
-				else break;
-			}
-			in_num[(*ret)++] = (num >> 8) & 0xff;
-			in_num[(*ret)++] = num & 0xff;
-
-			cout << "要读线圈个数1-2000（十进制整数）" << endl;
-			while (1){
-				cin >> num;
-				if (cin.fail()){
-					cin.sync(); cin.clear(); num = 0;
-					cout << "寄存器个数输入错误" << endl;
-					continue;
-				}
-				cin.sync();
-				if (num > 2000 || num < 1)
-					cout << "寄存器个数超出范围请重新输入" << endl;
-				else break;
-			}
-			in_num[(*ret)++] = (num >> 8) & 0xff;
-			in_num[(*ret)++] = num & 0xff;
-			break;
-		}
-		case 3:{
-			cout << "输入寄存器起始地址0-124（十进制整数）" << endl;
-			while (1){
-				cin >> num;
-				if (cin.fail()){
-					cin.sync(); cin.clear(); num = 0; 
-					cout << "寄存器地址输入错误" << endl;
-					continue;
-				}
-				cin.sync();
-				if (num > 124 || num < 0)
-					cout << "寄存器地址超出范围请重新输入" << endl;
-				else break;
-			}
-			in_num[(*ret)++] = (num >> 8) & 0xff;
-			in_num[(*ret)++] = num & 0xff;
-
-			cout << "要读寄存器的个数1-125(十进制整数)" << endl;
-			while (1){
-				cin >> num;
-				if (cin.fail()){
-					cin.sync(); cin.clear(); num = 0;
-					cout << "寄存器个数输入错误" << endl;
-					continue;
-				}
-				cin.sync();
-				if (num > 125 || num < 1)
-					cout << "寄存器个数超出范围请重新输入" << endl;
-				else break;
-			}
-			in_num[(*ret)++] = (num >> 8) & 0xff;
-			in_num[(*ret)++] = num & 0xff;
-			break;
-		}
-		case 15:{
-			cout << "输入线圈起始地址0-1999(十进制整数)" << endl;
-			while (1){
-				cin >> num;
-				if (cin.fail()){
-					cin.sync(); cin.clear(); num = 0;
-					cout << "寄存器地址输入错误" << endl;
-					continue;
-				}
-				cin.sync();
-				if (num > 1999 || num < 0)
-					cout << "寄存器地址超出范围请重新输入" << endl;
-				else break;
-			}
-			int i = num;
-			in_num[(*ret)++] = (num >> 8) & 0xff;
-			in_num[(*ret)++] = num & 0xff;
-
-			cout << "要写入的线圈个数1-1968(十进制整数)" << endl;
-			while (1){
-				cin >> num;
-				if (cin.fail()){
-					cin.sync(); cin.clear(); num = 0;
-					cout << "寄存器个数输入错误" << endl;
-					continue;
-				}
-				cin.sync();
-				if (num > 1968 || num < 1)
-					cout << "寄存器个数超出范围请重新输入" << endl;
-				else break;
-			}
-			int RstNum = num;
-			in_num[(*ret)++] = (num >> 8) & 0xff;
-			in_num[(*ret)++] = num & 0xff;
-			num = num % 8 != 0 ? num = num / 8 + 1 : num /= 8;
-			in_num[(*ret)++] = num & 0xff;
-			char *filename = "../../Coil.ini";
-			char *section = "Coil";
-			printf("请修改 %d 到 %d 的数值", i, RstNum + i - 1);
-			system("Coil.ini");
-			while (num--)
+			int number = 0;
+			int j = 0;
+			for (addr; j < 8 && Coilnum; j++)
 			{
-				int number = 0;
-				int j = 0;
-				for (i; j < 8 && RstNum; j++)
-				{
-					RstNum--;
-					char k[5] = {};
-					_itoa_s(i + j, k, 10);
-					number = GetPrivateProfileIntA(section, k, -1, filename);
-					in_num[*ret] = ((0xff & number) << (j)) | in_num[*ret];
-				}
-				*ret = *ret + 1;
-				if (!RstNum)break;
-				j = 0;
-				i = i + 8;
+				Coilnum--;
+				char k[5] = {};
+				_itoa_s(addr + j, k, 10);
+				number = GetPrivateProfileIntA(section, k, -1, filename);
+				SendBuf[retlen] = ((0xff & number) << (j)) | SendBuf[retlen];
 			}
-			break;
-		}
-
-		case 16:{
-			cout << "输入寄存器0-124之间的起始地址(十进制整数)" << endl;
-			while (1){
-				cin >> num;
-				if (cin.fail()){
-					cin.sync(); cin.clear(); num = 0;
-					cout << "寄存器地址输入错误" << endl;
-					continue;
-				}
-				cin.sync();
-				if (num > 124 || num < 0)
-					cout << "寄存器地址超出范围请重新输入" << endl;
-				else break;
-			}
-			int i = num;
-			in_num[(*ret)++] = (num >> 8) & 0xff;
-			in_num[(*ret)++] = num & 0xff;
-
-			cout << "要写入寄存器1-123之间的的个数(十进制整数)" << endl;
-			while (1){
-				cin >> num;
-				if (cin.fail()){
-					cin.sync(); cin.clear(); num = 0;
-					cout << "寄存器个数输入错误" << endl;
-					continue;
-				}
-				cin.sync();
-				if (num > 123 || num < 1)
-					cout << "寄存器个数超出范围请重新输入" << endl;
-				else break;
-			}
-			int RstNum = num;
-			in_num[(*ret)++] = (num >> 8) & 0xff;
-			in_num[(*ret)++] = num & 0xff;
-			in_num[(*ret)++] = (num * 2) & 0xff;
-			int c = *ret;
-
-loop5:		char *filename = "../../Register.ini";
-			char *section = "register";
-			printf("请修改 %d 到 %d 的数值", i, RstNum + i - 1);
-			system("Register.ini");
-			for (i; i < RstNum; i++, *ret = (*ret) + 2)
-			{
-				char k[10] = {};
-				_itoa_s(i, k, 10);
-				num = GetPrivateProfileIntA(section, k, -1, filename);
-				if (num > 65535)
-				{
-					*ret = c;
-					memset(in_num + c, 0, 1023 - c);
-					cout << "数值过大，请重新赋值" << endl;
-					goto loop5;
-				}
-				in_num[*ret] = (0xff & (num >> 8));
-				in_num[(*ret) + 1] = 0xff & num;
-			}
-			break;
-		}
+			retlen = retlen + 1;
+			if (!Coilnum)break;
+			j = 0;
+			addr = addr + 8;
 		}
 		break;
 	}
+
+	case 16:{
+		int retaddr = 0; int RstNum = 0;
+		injuage.In_10_Data(&retaddr, &RstNum);
+		SendBuf[retlen++] = (RstNum * 2) & 0xff;
+
+		char *filename = "../../Register.ini";
+		char *section = "register";
+		printf("请修改 %d 到 %d 的数值", retaddr, RstNum + retaddr - 1);
+		system("Register.ini");
+		for (retaddr; retaddr < RstNum + retaddr; retaddr++, retlen = retlen + 2)
+		{
+			char k[10] = {};
+			_itoa_s(retaddr, k, 10);
+			int num = GetPrivateProfileIntA(section, k, -1, filename);
+			SendBuf[retlen] = (0xff & (num >> 8));
+			SendBuf[retlen + 1] = 0xff & num;
+		}
+		break;
+	}
+	}
+	return retlen;
+
 }
 
 
@@ -260,8 +104,7 @@ loop5:		char *filename = "../../Register.ini";
 bool sendDemo(int* send_dataLen)
 {
 	SystemChange data;
-	int ret = 0;
-	Input(SendBuf, &ret);
+	int ret = Input();
 
 	uint16_t crc_ret = crc16table(SendBuf, ret);
 	SendBuf[ret++] = crc_ret & 0xff;
@@ -307,7 +150,8 @@ void ReceiveDemo(int send_numLen)
 
 	/*CRC校验*/
 	uint16_t d = crc16table(receiveBuf, retLenth - 2);
-	uint16_t t = ((uint16_t)((receiveBuf[retLenth - 1] & 0x00ff) << 8) | (uint16_t)(receiveBuf[retLenth - 2] & 0x00ff));
+	uint16_t t = ((uint16_t)((receiveBuf[retLenth - 1] & 0x00ff) << 8) 
+		| (uint16_t)(receiveBuf[retLenth - 2] & 0x00ff));
 	if (d != t)
 	{
 		cout << "CRC校验不一致" <<endl;

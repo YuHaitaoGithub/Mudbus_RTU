@@ -80,7 +80,6 @@ bool WzSerialPort::open()
 		return false;
 	}
 
-	
 	//GetCommTimeouts(hCom, LpTimeOuts);
 
 	SetCommTimeouts(hCom, &TimeOuts);
@@ -102,42 +101,37 @@ int WzSerialPort::send(const void *buf, int len)
 {
 	HANDLE hCom = *(HANDLE*)pHandle;
 
-	if (this->synchronizeflag)
-	{
 		// 同步方式
-		DWORD dwBytesWrite = len; //成功写入的数据字节数
-		BOOL bWriteStat = WriteFile(hCom, //串口句柄
-			buf, //数据首地址
-			dwBytesWrite, //要发送的数据字节数
-			&dwBytesWrite, //DWORD*，用来接收返回成功发送的数据字节数
-			NULL); //NULL为同步发送，OVERLAPPED*为异步发送
-		if (!bWriteStat)
-		{
-			return 0;
-		}
-		return dwBytesWrite;
+	DWORD dwBytesWrite = len; //成功写入的数据字节数
+	BOOL bWriteStat = WriteFile(hCom, //串口句柄
+		buf, //数据首地址
+		dwBytesWrite, //要发送的数据字节数
+		&dwBytesWrite, //DWORD*，用来接收返回成功发送的数据字节数
+		NULL); //NULL为同步发送，OVERLAPPED*为异步发送
+	if (!bWriteStat)
+	{
+		return 0;
 	}
+	return dwBytesWrite;
 }
 
 int WzSerialPort::receive(void *buf, int maxlen)
 {
 	HANDLE hCom = *(HANDLE*)pHandle;
 
-	if (this->synchronizeflag)
-	{
 		//同步方式
-		DWORD wCount = maxlen; //成功读取的数据字节数
-		BOOL bReadStat = ReadFile(hCom, //串口句柄
-			buf, //数据首地址
-			wCount, //要读取的数据最大字节数
-			&wCount, //DWORD*,用来接收返回成功读取的数据字节数
-			NULL); //NULL为同步发送，OVERLAPPED*为异步发送
-		if (!bReadStat)
-		{
-			return 0;
-		}
-		return wCount;
+	DWORD wCount = maxlen; //成功读取的数据字节数
+	BOOL bReadStat = ReadFile(hCom, //串口句柄
+		buf, //数据首地址
+		wCount, //要读取的数据最大字节数
+		&wCount, //DWORD*,用来接收返回成功读取的数据字节数
+		NULL); //NULL为同步发送，OVERLAPPED*为异步发送
+	if (!bReadStat)
+	{
+		return 0;
 	}
+	return wCount;
+	
 }
 
 
