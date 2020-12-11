@@ -11,10 +11,12 @@ typedef struct SelportParameters{
 
 #include <stdio.h>
 #include <string.h>
+#include<string>
+#include<set>
 
-//#include <WinSock2.h>
 #include <windows.h>
 
+using namespace std;
 
 class WzSerialPort
 {
@@ -34,7 +36,7 @@ public:
 	//接受数据或读数据，成功返回读取实际数据的长度，失败返回0
 	int receive(void *buf, int maxlen);
 
-	void AvailableCOM();//COM口判断
+	void AvailableCOM(set<int>& myset);//COM口判断
 
 	int pHandle[16];//保存串口号
 

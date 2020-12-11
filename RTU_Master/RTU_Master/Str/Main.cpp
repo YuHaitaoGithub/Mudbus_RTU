@@ -179,21 +179,53 @@ void ReceiveDemo(int send_numLen)
 /*串口配置***************************/
 void InPortParameter(WzSerialPort *Rcom)
 {
+lop:set<int>myset;
 	cout << "可用串口" << endl;
-	Rcom->AvailableCOM();
+	Rcom->AvailableCOM(myset);
 	cout << "输入可用串口号" << endl;
 	int port = 0;
 	cin >> port;
+	if (!myset.count(port))
+	{
+		cout << "无此串口，请重新输入串口号" << endl;
+		goto lop;
+	}
 	char p[20] = {};
 	sprintf(p, "\\\\.\\COM%d", port);
 	Rcom->lpconfigport.portname = (char*)calloc(strlen(p) + 1, sizeof(char));
 	memcpy(Rcom->lpconfigport.portname, p, strlen(p));
-	cout << "当前串口默认参数：波特率9600，数据位8，无校验，停止位1,超时时间2秒" << endl;
-	int chaeck = 1;
-	cout << "修改串口参数，不需要请关闭" << endl;
-	system("SportParameter.ini");
+	memset(p, 0, 20);
 	char *f = "../../SportParameter.ini";
 	char *sec = "ParameterText";
+	printf("当前串口默认参数：波特率%u，数据位%u，无校验%u，停止位%u, 超时时间%u秒\n", GetPrivateProfileIntA(sec, "Baudrate", -1, f), 
+		GetPrivateProfileIntA(sec, "Databit", -1, f), GetPrivateProfileIntA(sec, "Parity", -1, f),
+		GetPrivateProfileIntA(sec, "Stopbit", -1, f), GetPrivateProfileIntA(sec, "Timeout", -1, f));
+	int chaeck = 0;
+	cout << "默认参数按1，修改按2" << endl;
+	cin >> chaeck;
+	if (chaeck == 2)
+	{
+		cout << "输入波特率" << endl;
+		cin >> p;
+		WritePrivateProfileStringA(sec, "Baudrate", p, f);
+		memset(p, 0, 20);
+		cout << "输入数据位" << endl;
+		cin >> p;
+		WritePrivateProfileStringA(sec, "Databit", p, f);
+		memset(p, 0, 20);
+		cout << "输入校验位" << endl;
+		cin >> p;
+		WritePrivateProfileStringA(sec, "Parity", p, f);
+		memset(p, 0, 20);
+		cout << "输入停止位" << endl;
+		cin >> p;
+		WritePrivateProfileStringA(sec, "Stopbit", p, f);
+		memset(p, 0, 20);
+		cout << "输入超时时间" << endl;
+		cin >> p;
+		WritePrivateProfileStringA(sec, "Timeout", p, f);
+		memset(p, 0, 20);
+	}
 
 	Rcom->lpconfigport.baudrate = GetPrivateProfileIntA(sec, "Baudrate", -1, f);
 	Rcom->lpconfigport.databit = GetPrivateProfileIntA(sec, "Databit", -1, f);

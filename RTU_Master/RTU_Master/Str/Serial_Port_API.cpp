@@ -135,7 +135,7 @@ int WzSerialPort::receive(void *buf, int maxlen)
 }
 
 
-void WzSerialPort::AvailableCOM()
+void WzSerialPort::AvailableCOM(set<int>& myset)
 {
 	int iCOM = 255;
 	for (int i = 0; i <= iCOM; i++)
@@ -149,7 +149,10 @@ void WzSerialPort::AvailableCOM()
 		if (hCom1 == (HANDLE)-1)
 			continue;
 		else
+		{
+			myset.insert(i);
 			printf("%s ", cTemp);
+		}
 		CloseHandle(hCom1);
 	}
 	printf("\n");

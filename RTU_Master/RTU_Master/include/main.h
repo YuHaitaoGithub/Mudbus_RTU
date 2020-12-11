@@ -5,6 +5,8 @@
 #include "stdint.h"
 #include<iostream>
 #include<string>
+#include<set>
+#include<map>
 #include<vector>
 #include <windows.h>
 #include <process.h>
