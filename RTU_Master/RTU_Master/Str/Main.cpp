@@ -25,7 +25,6 @@ void nToHexstr(uint8_t n, uint8_t * hexstr, uint8_t strlen)
 /*数据输入*************************************/
 int Input()
 {
-	char b[2048] = {};
 	char c = '0';
 	while(c != '\n')
 		 c = getchar();
@@ -50,16 +49,8 @@ int Input()
 		injuage.In_0f_Data(&addr, &Coilnum);
 		int num = Coilnum % 8 != 0 ? Coilnum / 8 + 1 : Coilnum / 8;
 		SendBuf[retlen++] = num & 0xff;
-		uint8_t a[100] = {};
-		gets(b);
-		int i = 0;
-		stringstream ss(b);
-		while (ss >> a){
-			if (++i > num)break;
-			SendBuf[retlen++] = data.ChangeNum(a) & 0xff;
-			memset(a, 0, 100);
-		}
-		memset(b, 0, sizeof(b));
+		printf("请输入%d个字节的数据（十六进制）\n",num);
+		injuage.RW_InJauge(num);
 		break;
 	}
 		
@@ -67,25 +58,14 @@ int Input()
 		int retaddr = 0; int RstNum = 0;
 		injuage.In_10_Data(&retaddr, &RstNum);
 		SendBuf[retlen++] = (RstNum * 2) & 0xff;
-		uint8_t a[100] = {};
-		gets(b);
-		int Len = strlen(b);
-		if ((((Len / 2) - 1) % 2 != 0) || (((Len / 2) - 1) / 2 != RstNum * 2))
-		int i = 0;
-		stringstream ss(b);
-		
-		while (ss >> a){
-			SendBuf[retlen++] = data.ChangeNum(a) & 0xff;
-			memset(a, 0, 100);
-		}
-		memset(b, 0, sizeof(b));
+		printf("请输入%d个字节的数据（十六进制）\n", RstNum * 2);
+		injuage.RW_InJauge(RstNum * 2);
 		break;
 	}
 	}
 	return retlen;
 
 }
-
 
 
 
@@ -231,12 +211,10 @@ lop:set<int>myset;
 
 
 
-
 /*串口监听线程************************************/
 void SportListen(void*)
 {
 	WzSerialPort p = w;
-	
 	char *Lconfigport = (char *)calloc(strlen(p.lpconfigport.portname)+1,sizeof(char));
 	memcpy(Lconfigport, p.lpconfigport.portname, strlen(p.lpconfigport.portname));
 	HANDLE hCom = NULL;

@@ -7,6 +7,8 @@
 #include "malloc.h"
 #include <iostream>
 #include "Data_Transformation.h"
+//#include<sstream>
+
 using namespace std;
 
 
@@ -29,6 +31,8 @@ public:
 	void In_0f_Data(int *lpaddr,int *lpCoilnum);//功能码15判断
 
 	void In_10_Data(int *lprestaddr, int *lpRestnum);//功能码16判断
+
+	void RW_InJauge(int num);
 
 	int *len;//字节数
 	uint8_t *buf;//请求报文指针

@@ -197,3 +197,38 @@ void DataInput::In_10_Data(int *lprestaddr, int *lpRestnum)
 		}
 	}
 }
+
+void DataInput::RW_InJauge(int num)
+{
+	SystemChange data;
+first:	char b[2048] = {};
+	uint8_t a[100] = {};
+	gets(b);
+	int Len = *len;
+	int i = 0;
+	while (1){
+		for (int j = 0;j < 2;)
+		{
+			if (b[i] == '\0'){ i = -1; break; }
+			if (b[i] != ' ')
+			{
+				memcpy(a+j, b + i, 1);
+				++j; 
+			}
+			++i;
+		}
+		if (i == -1)
+		{
+			if ((*len) - Len != num)
+			{
+				*len = Len;
+				memset(buf + Len, 0, (*len) - Len);
+				cout << "输入不合法，从新输入" << endl;
+				goto first;
+			}
+			else break;
+		}
+		buf[(*len)++] = data.ChangeNum(a) & 0xff;
+		memset(a, 0, 100);
+	}
+}
