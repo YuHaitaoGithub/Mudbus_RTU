@@ -163,7 +163,7 @@ bool SystemChange::LenthJuage(int rlen, int len)
 	}
 	if (rlen == 0)
 	{
-		cout << "读取超时" << endl;
+		cout << "读取超时,按回车继续" << endl;
 		return false;
 	}
 	if (rlen < 5)

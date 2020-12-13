@@ -137,7 +137,7 @@ int WzSerialPort::receive(void *buf, int maxlen)
 
 void WzSerialPort::AvailableCOM(set<int>& myset)
 {
-	int iCOM = 255;
+	int iCOM = 20;
 	for (int i = 0; i <= iCOM; i++)
 	{
 		char cTemp[MAX_PATH];
@@ -157,3 +157,5 @@ void WzSerialPort::AvailableCOM(set<int>& myset)
 	}
 	printf("\n");
 }
+
+
