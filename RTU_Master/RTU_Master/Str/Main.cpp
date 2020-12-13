@@ -248,6 +248,23 @@ void SportListen(void*)
 				break;
 			}
 		}
+		//if (hCom != INVALID_HANDLE_VALUE && tag == 0)
+		//{
+		//	memset(w.pHandle, 0, 16);
+		//	w = p;
+		//	memcpy(w.pHandle, &hCom, sizeof(hCom));
+		//	tag = 1;
+		//	cout << "已连接" << endl;
+		//	cout << "请继续输入" << endl;
+		//	/*w.pHandle = hCom;*/
+		//	SetCommState(hCom, &w.p);
+		//	SetCommTimeouts(hCom, &w.TimeOuts);
+		//	if(sign == 1)CloseHandle(hCom);
+		//	free(Lconfigport);
+		//	Lconfigport = NULL;
+		//	break;
+		//}
+		Sleep(100);
 	}
 	_endthread();
 }
