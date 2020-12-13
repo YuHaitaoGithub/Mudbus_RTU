@@ -25,6 +25,7 @@ void nToHexstr(uint8_t n, uint8_t * hexstr, uint8_t strlen)
 /*数据输入*************************************/
 int Input()
 {
+	char b[2048] = {};
 	char c = '0';
 	while(c != '\n')
 		 c = getchar();
@@ -49,47 +50,35 @@ int Input()
 		injuage.In_0f_Data(&addr, &Coilnum);
 		int num = Coilnum % 8 != 0 ? Coilnum / 8 + 1 : Coilnum / 8;
 		SendBuf[retlen++] = num & 0xff;
-		char *filename = "../../Coil.ini";
-		char *section = "Coil";
-		printf("请修改 %d 到 %d 的数值", addr, Coilnum + addr - 1);
-		system("Coil.ini");
-		while (num--)
-		{
-			int number = 0;
-			int j = 0;
-			for (addr; j < 8 && Coilnum; j++)
-			{
-				Coilnum--;
-				char k[5] = {};
-				_itoa_s(addr + j, k, 10);
-				number = GetPrivateProfileIntA(section, k, -1, filename);
-				SendBuf[retlen] = ((0xff & number) << (j)) | SendBuf[retlen];
-			}
-			retlen = retlen + 1;
-			if (!Coilnum)break;
-			j = 0;
-			addr = addr + 8;
+		uint8_t a[100] = {};
+		gets(b);
+		int i = 0;
+		stringstream ss(b);
+		while (ss >> a){
+			if (++i > num)break;
+			SendBuf[retlen++] = data.ChangeNum(a) & 0xff;
+			memset(a, 0, 100);
 		}
+		memset(b, 0, sizeof(b));
 		break;
 	}
-
+		
 	case 16:{
 		int retaddr = 0; int RstNum = 0;
 		injuage.In_10_Data(&retaddr, &RstNum);
 		SendBuf[retlen++] = (RstNum * 2) & 0xff;
-
-		char *filename = "../../Register.ini";
-		char *section = "register";
-		printf("请修改 %d 到 %d 的数值", retaddr, RstNum + retaddr - 1);
-		system("Register.ini");
-		for (retaddr; retaddr < RstNum; retaddr++, retlen = retlen + 2)
-		{
-			char k[10] = {};
-			_itoa_s(retaddr, k, 10);
-			int num = GetPrivateProfileIntA(section, k, -1, filename);
-			SendBuf[retlen] = (0xff & (num >> 8));
-			SendBuf[retlen + 1] = 0xff & num;
+		uint8_t a[100] = {};
+		gets(b);
+		int Len = strlen(b);
+		if ((((Len / 2) - 1) % 2 != 0) || (((Len / 2) - 1) / 2 != RstNum * 2))
+		int i = 0;
+		stringstream ss(b);
+		
+		while (ss >> a){
+			SendBuf[retlen++] = data.ChangeNum(a) & 0xff;
+			memset(a, 0, 100);
 		}
+		memset(b, 0, sizeof(b));
 		break;
 	}
 	}
