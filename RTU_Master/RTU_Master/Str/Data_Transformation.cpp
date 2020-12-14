@@ -40,7 +40,7 @@ uint16_t SystemChange::ReceiveLenth(uint8_t* data)
 	{
 	case 1:{
 		d = (((data[4] & 0x00ff)<<8)| (data[5] & 0x00ff));
-		d = d % 8 == 0 ? d / 8 : d / 8 + 1;
+		d = (d + 7) / 8;
 		d += 5;
 		break;
 	}
@@ -100,7 +100,7 @@ bool SystemChange::ErrorcodeJuage(uint8_t* Sdata, uint8_t* Rdata, int Buflen, in
 
 		case 1:{
 			uint16_t d = (((Sdata[4] & 0x00ff) << 8) | (Sdata[5] & 0x00ff));
-			d = d % 8 == 0 ? d / 8 : d / 8 + 1;
+			d = (d + 7) / 8;
 			if (((uint16_t)(Rdata[2] & 0x00ff)) != d)
 			{
 				cout << "×Ö½ÚÊý´íÎó" << endl;
