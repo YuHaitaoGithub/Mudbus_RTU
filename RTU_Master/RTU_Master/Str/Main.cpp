@@ -158,18 +158,24 @@ bool ReceiveDemo(int send_numLen)
 void InPortParameter(WzSerialPort *Rcom)
 {
 	/*串口号选择**********************/
-lop:set<int>myset;
-	cout << "可用串口" << endl;
-	Rcom->AvailableCOM(myset);
-	cout << "输入可用串口号,重新选择按 -1" << endl;
 	int port = 0;
-	cin >> port;
-	if (port == -1)goto lop;
-	if (!myset.count(port))
+	for (;;)
 	{
-		cout << "无此串口，请重新输入串口号" << endl;
-		goto lop;
+		set<int>myset;
+		cout << "可用串口" << endl;
+		Rcom->AvailableCOM(myset);
+		cout << "输入可用串口号,重新选择按 -1" << endl;
+		port = 0;
+		cin >> port;
+		if (port == -1)continue;
+		if (!myset.count(port))
+		{
+			cout << "无此串口，请重新输入串口号" << endl;
+			continue;
+		}
+		break;
 	}
+
 	char p[20] = {};
 	sprintf(p, "\\\\.\\COM%d", port);
 	Rcom->lpconfigport.portname = (char*)calloc(strlen(p) + 1, sizeof(char));
@@ -274,55 +280,57 @@ void SportListen(void*)
 /*主函数************************************/
 void main()
 {
-loopcom:if (tag != 2)
-		memset(&w, 0, sizeof(WzSerialPort));
-
-	InPortParameter(&w);
-
-	bool open_sign = w.open();
-	if (!open_sign)
-	{
-		cout << "open serial port failed..." << endl;
-		goto loopcom;
-	}
-	
 	while (1)
 	{
-		/*开启线程监控串口*/
-		 _beginthread(SportListen, 0, NULL); 
-		int send_dataLen = 0;
-		if (!sendDemo(&send_dataLen))
+		memset(&w, 0, sizeof(WzSerialPort));
+
+		InPortParameter(&w);
+
+		bool open_sign = w.open();
+		if (!open_sign)
 		{
-			memset(receiveBuf, 0, 1024);
-			memset(SendBuf, 0, 1024);
-			if (tag == 0){
-				tag = 1; goto loopcom;
-			}
+			cout << "open serial port failed..." << endl;
 			continue;
 		}
-		cout << "读取数据中........" << endl;
-		int receive_dataLen = 0;
-		
-		if (!ReceiveDemo(send_dataLen))
-		{
-			memset(receiveBuf, 0, 1024);
-			memset(SendBuf, 0, 1024);
-			if (tag == 0){
-				tag = 1; goto loopcom;
-			}
-			continue;
-		}
-		memset(receiveBuf, 0, 1024);
-		memset(SendBuf, 0, 1024);
+
 		while (1)
 		{
-			char t = {};
-			cout << "输入数字 0 结束程序，输入数字 1 继续" << endl;
-			cin >> t;
-			if (t == '0')return;
-			if (t == '1')break;
+			/*开启线程监控串口*/
+			_beginthread(SportListen, 0, NULL);
+			int send_dataLen = 0;
+			if (!sendDemo(&send_dataLen))
+			{
+				memset(receiveBuf, 0, 1024);
+				memset(SendBuf, 0, 1024);
+				if (tag == 0){
+					tag = 1; break;
+				}
+				continue;
+			}
+			cout << "读取数据中........" << endl;
+			int receive_dataLen = 0;
+
+			if (!ReceiveDemo(send_dataLen))
+			{
+				memset(receiveBuf, 0, 1024);
+				memset(SendBuf, 0, 1024);
+				if (tag == 0){
+					tag = 1; break;
+				}
+				continue;
+			}
+			memset(receiveBuf, 0, 1024);
+			memset(SendBuf, 0, 1024);
+			while (1)
+			{
+				char t = {};
+				cout << "输入数字 0 结束程序，输入数字 1 继续" << endl;
+				cin >> t;
+				if (t == '0')return;
+				if (t == '1')break;
+			}
 		}
+		w.close();
 	}
-	w.close();
 	return;
 }

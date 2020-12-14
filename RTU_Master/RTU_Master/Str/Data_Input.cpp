@@ -58,23 +58,26 @@ void DataInput::In_SlaveAddress()
 
 int DataInput::FunctionCode()
 {
-	int fun_code = 0;
-	SystemChange data;
-	unsigned char l[50];
-loop:cout << "输入功能码01、03、0f、10" << endl;
-	cin >> l;
-	if (strlen((char*)l) != 2){
-		cout << "功能码输入不合法，重新输入" << endl; goto loop;
+	while (1)
+	{
+		int fun_code = 0;
+		SystemChange data;
+		unsigned char l[50];
+		cout << "输入功能码01、03、0f、10" << endl;
+		cin >> l;
+		if (strlen((char*)l) != 2){
+			cout << "功能码输入不合法，重新输入" << endl; continue;
+		}
+		cin.sync();
+		fun_code = data.ChangeNum(l);
+		if (!(fun_code == 1 || fun_code == 3 || fun_code == 15 || fun_code == 16 || fun_code == 21)){
+			cout << "功能码输入不合法，重新输入" << endl; continue;
+		}
+		if (fun_code == 21)fun_code = 15;
+		buf[(*len)++] = 0xff & fun_code;
+		memset(l, 0, 50);
+		return fun_code;
 	}
-	cin.sync();
-	fun_code = data.ChangeNum(l);
-	if (!(fun_code == 1 || fun_code == 3 || fun_code == 15 || fun_code == 16 || fun_code == 21)){
-		cout << "功能码输入不合法，重新输入" << endl; goto loop;
-	}
-	if (fun_code == 21)fun_code = 15;
-	buf[(*len)++] = 0xff & fun_code;
-	memset(l, 0, 50);
-	return fun_code;
 }
 
 void DataInput::In_01_Data()
