@@ -167,6 +167,8 @@ void InPortParameter(WzSerialPort *Rcom)
 		cout << "输入可用串口号,重新选择按 -1" << endl;
 		port = 0;
 		cin >> port;
+		cin.clear();
+		cin.sync();
 		if (port == -1)continue;
 		if (!myset.count(port))
 		{
