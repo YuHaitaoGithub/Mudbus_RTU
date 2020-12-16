@@ -167,8 +167,7 @@ void InPortParameter(WzSerialPort *Rcom)
 		cout << "输入可用串口号,重新选择按 -1" << endl;
 		port = 0;
 		cin >> port;
-		cin.clear();
-		cin.sync();
+		cin.clear();cin.sync();
 		if (port == -1)continue;
 		if (!myset.count(port))
 		{
@@ -177,12 +176,12 @@ void InPortParameter(WzSerialPort *Rcom)
 		}
 		break;
 	}
-
 	char p[20] = {};
 	sprintf(p, "\\\\.\\COM%d", port);
 	Rcom->lpconfigport.portname = (char*)calloc(strlen(p) + 1, sizeof(char));
 	memcpy(Rcom->lpconfigport.portname, p, strlen(p));
 	memset(p, 0, 20);
+
 	/*波特率等参数设置**************************/
 	char *f = "../../SportParameter.ini";
 	char *sec = "ParameterText";
@@ -217,7 +216,7 @@ void InPortParameter(WzSerialPort *Rcom)
 		cin >> p;
 		WritePrivateProfileStringA(sec, "Timeout", p, f);
 	}
-
+	/*参数赋值*/
 	Rcom->lpconfigport.baudrate = GetPrivateProfileIntA(sec, "Baudrate", -1, f);
 	Rcom->lpconfigport.databit = GetPrivateProfileIntA(sec, "Databit", -1, f);
 	Rcom->lpconfigport.parity = GetPrivateProfileIntA(sec, "Parity", -1, f);
