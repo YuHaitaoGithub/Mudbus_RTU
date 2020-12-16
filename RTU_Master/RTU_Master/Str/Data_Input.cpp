@@ -85,7 +85,7 @@ void DataInput::In_01_Data()
 	while (1)
 	{
 		cout << "输入线圈起始地址0-1999(十进制整数)" << endl;
-		int retnum = InputJuage(1999, 0);
+		int retnum = InputJuage(CoilNum_Max, 0);
 		if (retnum == -1)
 			continue;
 		else{
@@ -114,7 +114,7 @@ void DataInput::In_03_Data()
 	while (1)
 	{
 		cout << "输入寄存器起始地址0-124（十进制整数）" << endl;
-		int retnum = InputJuage(124, 0);
+		int retnum = InputJuage(RestNum_Max, 0);
 		if (retnum == -1)
 			continue;
 		else{
@@ -144,7 +144,7 @@ void DataInput::In_0f_Data(int *lpaddr, int *lpCoilnum)
 	while (1)
 	{
 		cout << "输入寄存器起始地址0-1999（十进制整数）" << endl;
-		int retnum = InputJuage(1999, 0);
+		int retnum = InputJuage(CoilNum_Max, 0);
 		if (retnum == -1)
 			continue;
 		else{
@@ -175,8 +175,8 @@ void DataInput::In_10_Data(int *lprestaddr, int *lpRestnum)
 {
 	while (1)
 	{
-		cout << "输入寄存器0-122之间的起始地址(十进制整数)" << endl;
-		int retnum = InputJuage(122, 0);
+		cout << "输入寄存器0-124之间的起始地址(十进制整数)" << endl;
+		int retnum = InputJuage(RestNum_Max, 0);
 		if (retnum == -1)
 			continue;
 		else{

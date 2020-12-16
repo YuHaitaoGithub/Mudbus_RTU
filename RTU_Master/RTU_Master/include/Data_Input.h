@@ -7,6 +7,9 @@
 #include "malloc.h"
 #include <iostream>
 #include "Data_Transformation.h"
+
+#define CoilNum_Max   1999
+#define RestNum_Max   124
 //#include<sstream>
 
 using namespace std;

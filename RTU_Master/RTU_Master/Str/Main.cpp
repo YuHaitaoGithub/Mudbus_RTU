@@ -190,11 +190,11 @@ void InPortParameter(WzSerialPort *Rcom)
 	int chaeck = 0;
 	cout << "默认参数按1，修改按2" << endl;
 	cin >> chaeck;
-	set<string>mset1{ "9600", "4800", "11520", "19200" };
+	set<string>mset1{ "9600", "4800", "115200", "19200" };
 	set<string>mset2{ "8" ,"5"};
 	set<string>mset3{ "0", "1", "2" };
 	set<string>mset4{ "0", "1", "2" };
-	vector<pair<char*, set<string>>>myvector{ { "Baudrate(4800,9600,11520,19200)", mset1 }, { "Databit(8,5)", mset2 }, { "Parity(0,1,2)", mset3 }, { "Stopbit(0,1,2)", mset4 } };
+	vector<pair<char*, set<string>>>myvector{ { "Baudrate(4800,9600,115200,19200)", mset1 }, { "Databit(8)", mset2 }, { "Parity(0,1,2)", mset3 }, { "Stopbit(0,1,2)", mset4 } };
 	if (chaeck == 2)
 	{
 		for (int j = 0; j < 4;j++)
@@ -254,22 +254,6 @@ void SportListen(void*)
 				break;
 			}
 		}
-		//if (hCom != INVALID_HANDLE_VALUE && tag == 0)
-		//{
-		//	memset(w.pHandle, 0, 16);
-		//	w = p;
-		//	memcpy(w.pHandle, &hCom, sizeof(hCom));
-		//	tag = 1;
-		//	cout << "已连接" << endl;
-		//	cout << "请继续输入" << endl;
-		//	/*w.pHandle = hCom;*/
-		//	SetCommState(hCom, &w.p);
-		//	SetCommTimeouts(hCom, &w.TimeOuts);
-		//	if(sign == 1)CloseHandle(hCom);
-		//	free(Lconfigport);
-		//	Lconfigport = NULL;
-		//	break;
-		//}
 		Sleep(100);
 	}
 	_endthread();
