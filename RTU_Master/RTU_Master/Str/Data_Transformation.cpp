@@ -158,7 +158,7 @@ bool SystemChange::LenthJuage(int rlen, int len)
 {
 	if (rlen > len)
 	{
-		cout << "长度不合法" << endl;
+		cout << "长度不合法，按回车继续" << endl;
 		return false;
 	}
 	if (rlen == 0)
@@ -168,7 +168,7 @@ bool SystemChange::LenthJuage(int rlen, int len)
 	}
 	if (rlen < 5)
 	{
-		cout << "长度过短" << endl;
+		cout << "长度过短，按回车继续" << endl;
 		return false;
 	}
 	return true;
