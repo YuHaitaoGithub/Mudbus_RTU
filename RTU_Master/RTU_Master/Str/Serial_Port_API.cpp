@@ -135,26 +135,41 @@ int WzSerialPort::receive(void *buf, int maxlen)
 }
 
 
-void WzSerialPort::AvailableCOM(set<int>& myset)
+void WzSerialPort::AvailableCOM(set<string>& myset)
 {
-	int iCOM = 20;
-	for (int i = 0; i <= iCOM; i++)
+	HKEY hKey;
+	char *lpSubKey = "HARDWARE\\DEVICEMAP\\SERIALCOMM\\";
+
+	if (RegOpenKeyExA(HKEY_LOCAL_MACHINE, lpSubKey, 0, KEY_READ, &hKey) != ERROR_SUCCESS)
 	{
-		char cTemp[MAX_PATH];
-		char cTempFull[MAX_PATH];
-		HANDLE hCom1; //全局变量，串口句柄 
-		sprintf_s(cTemp, "COM%d", i);
-		sprintf_s(cTempFull, "\\\\.\\COM%d", i);
-		hCom1 = CreateFileA(cTempFull, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-		if (hCom1 == (HANDLE)-1)
-			continue;
-		else
-		{
-			myset.insert(i);
-			printf("%s ", cTemp);
-		}
-		CloseHandle(hCom1);
+		return;
 	}
+	char szValueName[NAME_LEN] = {};
+	BYTE szPortName[NAME_LEN] = {};
+	LONG status;
+	DWORD dwIndex = 0;
+	DWORD dwSizeValueName = NAME_LEN;
+	DWORD dwSizeofPortName = NAME_LEN;
+	DWORD Type;
+	dwSizeValueName = NAME_LEN;
+	dwSizeofPortName = NAME_LEN;
+	do
+	{
+		status = RegEnumValueA(hKey, dwIndex++, szValueName, &dwSizeValueName, NULL, &Type,
+			szPortName, &dwSizeofPortName);
+		if ((status == ERROR_SUCCESS))
+		{
+			string str = ""; 
+			printf("%s ", szPortName);
+			str.assign((char*)szPortName, strlen((char*)szPortName));
+			myset.insert(str);
+		}
+		//每读取一次dwSizeValueName和dwSizeofPortName都会被修改
+		//注意一定要重置,否则会出现很离奇的错误,本人就试过因没有重置,出现读不了COM大于10以上的串口
+		dwSizeValueName = NAME_LEN;
+		dwSizeofPortName = NAME_LEN;
+	} while ((status != ERROR_NO_MORE_ITEMS));
+	RegCloseKey(hKey);
 	printf("\n");
 }
 

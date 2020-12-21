@@ -118,9 +118,10 @@ bool ReceiveDemo(int send_numLen)
 	HANDLE hCom = *(HANDLE*)w.pHandle;
 	PurgeComm(hCom,PURGE_RXCLEAR);
 	int retLenth = w.receive(receiveBuf, bufLenth+1);
-	if (tag == 0 || GetLastError() == 995)
+	if (GetLastError() == 995)
 	{
-		cout << "串口不存在，接收失败" << endl;
+		tag = 0;
+		cout << "串口错误，接收失败" << endl;
 		return false;
 	}
 	if (!data.LenthJuage(retLenth, bufLenth))
@@ -158,29 +159,27 @@ bool ReceiveDemo(int send_numLen)
 void InPortParameter(WzSerialPort *Rcom)
 {
 	/*串口号选择**********************/
-	int port = 0;
+	char p[100] = "\\\\.\\";
 	for (;;)
 	{
-		set<int>myset;
+		string str = "";
+		set<string>myset;
 		cout << "可用串口" << endl;
 		Rcom->AvailableCOM(myset);
 		cout << "输入可用串口号,重新选择按 -1" << endl;
-		port = 0;
-		cin >> port;
-		cin.clear();cin.sync();
-		if (port == -1)continue;
-		if (!myset.count(port))
+		cin >> str;
+		if (str == "-1")continue;
+		if (!myset.count(str))
 		{
 			cout << "无此串口，请重新输入串口号" << endl;
 			continue;
 		}
+		strcpy(p+4, str.c_str());
 		break;
 	}
-	char p[20] = {};
-	sprintf(p, "\\\\.\\COM%d", port);
 	Rcom->lpconfigport.portname = (char*)calloc(strlen(p) + 1, sizeof(char));
 	memcpy(Rcom->lpconfigport.portname, p, strlen(p));
-	memset(p, 0, 20);
+	memset(p, 0, sizeof(p));
 
 	/*波特率等参数设置**************************/
 	char *f = "../../SportParameter.ini";
@@ -210,7 +209,7 @@ void InPortParameter(WzSerialPort *Rcom)
 			}
 			strcpy(p, pp.c_str());
 			WritePrivateProfileStringA(sec, myvector[j].first, p, f);
-			memset(p, 0, 20);
+			memset(p, 0, sizeof(p));
 		}
 		cout << "输入超时时间" << endl;
 		cin >> p;
@@ -248,7 +247,7 @@ void SportListen(void*)
 			if (GetLastError() == 2)
 			{
 				char str[20] = {};
-				cout << "串口被拔出" << endl;
+				if (tag == 0)cout << "串口被拔出" << endl;
 				tag = 0;
 				memset(&w, 0, sizeof(w));
 				CloseHandle(hCom);
@@ -319,3 +318,4 @@ void main()
 	}
 	return;
 }
+
