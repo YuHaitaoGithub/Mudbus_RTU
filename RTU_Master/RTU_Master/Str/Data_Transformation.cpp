@@ -56,7 +56,7 @@ uint16_t SystemChange::ReceiveLenth(uint8_t* data)
 }
 
 
-bool SystemChange::ErrorcodeJuage(uint8_t* Sdata, uint8_t* Rdata, int Buflen, int Rlen)
+bool SystemChange::ErrorcodeJuage(uint8_t *Sdata, uint8_t *Rdata, int Buflen, int Rlen)
 {
 	if ((uint16_t)(Sdata[0] & 0x00ff) != (uint16_t)(Rdata[0] & 0x00ff))
 	{
@@ -84,7 +84,7 @@ bool SystemChange::ErrorcodeJuage(uint8_t* Sdata, uint8_t* Rdata, int Buflen, in
 				cout << "异常报文" << endl;
 				return false;
 			}
-			cout << "异常报文" << endl;
+			cout << "非法异常报文" << endl;
 			return false;
 		}
 	}
@@ -95,30 +95,22 @@ bool SystemChange::ErrorcodeJuage(uint8_t* Sdata, uint8_t* Rdata, int Buflen, in
 			cout << "功能码错误" << endl;
 			return false;
 		}
-		switch ((uint16_t)(Rdata[1] & 0x00ff))
+		if ((uint16_t)(Rdata[1] & 0x00ff) == 1 || (uint16_t)(Rdata[1] & 0x00ff) == 3)
 		{
-
-		case 1:{
 			uint16_t d = (((Sdata[4] & 0x00ff) << 8) | (Sdata[5] & 0x00ff));
-			d = (d + 7) / 8;
+			if ((uint16_t)(Rdata[1] & 0x00ff) == 1)
+				d = (d + 7) / 8;
+			else
+				d = d * 2;
 			if (((uint16_t)(Rdata[2] & 0x00ff)) != d)
 			{
 				cout << "字节数错误" << endl;
 				return false;
 			}
-			break;
+			return true;
 		}
-		case 3:{
-			uint16_t d = (((Sdata[4] & 0x00ff) << 8) | (Sdata[5] & 0x00ff));
-			d = d * 2;
-			if (((uint16_t)(Rdata[2] & 0x00ff)) != d)
-			{
-				cout << "字节数错误" << endl;
-				return false;
-			}
-			break;
-		}
-		case 15:{
+		if ((uint16_t)(Rdata[1] & 0x00ff) == 15 || (uint16_t)(Rdata[1] & 0x00ff) == 16)
+		{
 			if ((uint16_t)((uint16_t)((Sdata[2] & 0x00ff) << 8) | (uint16_t)(Sdata[3] & 0x00ff)) !=
 				(uint16_t)((uint16_t)((Rdata[2] & 0x00ff) << 8) | (uint16_t)(Rdata[3] & 0x00ff)))
 			{
@@ -131,26 +123,9 @@ bool SystemChange::ErrorcodeJuage(uint8_t* Sdata, uint8_t* Rdata, int Buflen, in
 				cout << "寄存器数量错误" << endl;
 				return false;
 			}
-			break;
-		}
-		case 16:{
-			if ((uint16_t)((uint16_t)((Sdata[2] & 0x00ff) << 8) | (uint16_t)(Sdata[3] & 0x00ff)) !=
-				(uint16_t)((uint16_t)((Rdata[2] & 0x00ff) << 8) | (uint16_t)(Rdata[3] & 0x00ff)))
-			{
-				cout << "寄存器起始地址错误" << endl;
-				return false;
-			}
-			if ((uint16_t)((uint16_t)((Sdata[4] & 0x00ff) << 8) | (uint16_t)(Sdata[5] & 0x00ff)) !=
-				(uint16_t)((uint16_t)((Rdata[4] & 0x00ff) << 8) | (uint16_t)(Rdata[5] & 0x00ff)))
-			{
-				cout << "寄存器数量错误" << endl;
-				return false;
-			}
-			break;
-		}
+			return true;
 		}
 	}
-	return true;
 }
 
 
