@@ -1,7 +1,7 @@
 #include"..\include\main.h"
 
-uint8_t receiveBuf[1024] = {};
-uint8_t SendBuf[1024] = {};
+uint8_t receiveBuf[ReceiveBufLen] = {};
+uint8_t SendBuf[SendBufLen] = {};
 int tag = 1;
 
 WzSerialPort w;
@@ -285,8 +285,8 @@ void main()
 			int send_dataLen = 0;
 			if (!sendDemo(&send_dataLen))
 			{
-				memset(receiveBuf, 0, 1024);
-				memset(SendBuf, 0, 1024);
+				memset(receiveBuf, 0, ReceiveBufLen);
+				memset(SendBuf, 0, SendBufLen);
 				if (tag == 0){
 					tag = 1; break;
 				}
@@ -297,15 +297,15 @@ void main()
 
 			if (!ReceiveDemo(send_dataLen))
 			{
-				memset(receiveBuf, 0, 1024);
-				memset(SendBuf, 0, 1024);
+				memset(receiveBuf, 0, ReceiveBufLen);
+				memset(SendBuf, 0, SendBufLen);
 				if (tag == 0){
 					tag = 1; break;
 				}
 				continue;
 			}
-			memset(receiveBuf, 0, 1024);
-			memset(SendBuf, 0, 1024);
+			memset(receiveBuf, 0, ReceiveBufLen);
+			memset(SendBuf, 0, SendBufLen);
 			while (1)
 			{
 				char t = {};

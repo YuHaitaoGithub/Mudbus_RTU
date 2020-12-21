@@ -8,6 +8,7 @@
 #include <iostream>
 #include "Data_Transformation.h"
 
+#define AddrMAX       247
 #define CoilNum_Max   1999
 #define RestNum_Max   124
 //#include<sstream>

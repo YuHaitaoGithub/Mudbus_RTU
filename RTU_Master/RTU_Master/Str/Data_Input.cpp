@@ -1,6 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "..\include\Data_Input.h"
 
+
 DataInput::DataInput()
 {
 
@@ -46,7 +47,7 @@ void DataInput::In_SlaveAddress()
 	while (1)
 	{
 		cout << "输入从站地址1-247（十进制数）" << endl;
-		int retnum = InputJuage(247, 1);
+		int retnum = InputJuage(AddrMAX, 1);
 		if (retnum == -1)
 			continue;
 		else {

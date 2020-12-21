@@ -13,6 +13,10 @@
 #include "Data_Transformation.h"
 #include "Data_Input.h"
 
+
+#define ReceiveBufLen  1024
+#define SendBufLen     1024
+
 using namespace std;
 
 
