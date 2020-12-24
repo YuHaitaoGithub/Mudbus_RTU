@@ -182,7 +182,7 @@ void InPortParameter(WzSerialPort *Rcom)
 	memset(p, 0, sizeof(p));
 
 	/*波特率等参数设置**************************/
-	char *f = "../../SportParameter.ini";
+	char *f = "config\\SportParameter.ini";
 	char *sec = "ParameterText";
 	printf("当前串口默认参数：波特率%u，数据位%u，无校验%u，停止位%u, 超时时间%u秒\n", GetPrivateProfileIntA(sec, "Baudrate", -1, f), 
 		GetPrivateProfileIntA(sec, "Databit", -1, f), GetPrivateProfileIntA(sec, "Parity", -1, f),
